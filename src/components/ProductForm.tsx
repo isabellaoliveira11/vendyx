@@ -16,42 +16,42 @@ function ProductForm() {
   };
 
   return (
-    <div className="bg-white rounded shadow p-4">
-      <h3 className="text-lg font-semibold text-orange-600 mb-3">Adicionar Novo Produto</h3>
+    <div className="bg-white rounded-xl shadow-md p-4">
+      <h3 className="text-lg font-semibold text-purple-800 mb-4">Adicionar Novo Produto</h3>
 
       <div className="grid gap-3">
         <input
           type="text"
           placeholder="Digite o nome"
-          className="border rounded p-2"
+          className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
         />
         <input
           type="text"
           placeholder="Digite o valor"
-          className="border rounded p-2"
+          className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={preco}
           onChange={(e) => setPreco(e.target.value)}
         />
         <input
           type="text"
           placeholder="Digite a quantidade"
-          className="border rounded p-2"
+          className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={quantidade}
           onChange={(e) => setQuantidade(e.target.value)}
         />
         <input
           type="text"
           placeholder="Selecione a categoria"
-          className="border rounded p-2"
+          className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={categoria}
           onChange={(e) => setCategoria(e.target.value)}
         />
 
         <button
           onClick={adicionarProduto}
-          className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
+          className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-md transition"
         >
           + Novo Produto
         </button>

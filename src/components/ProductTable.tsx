@@ -28,21 +28,21 @@ export const ProductTable = () => {
   });
 
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <h2 className="text-lg font-semibold text-orange-600 mb-3">Lista de Produtos</h2>
+    <div className="bg-white p-4 rounded-xl shadow-md">
+      <h2 className="text-lg font-semibold text-purple-800 mb-4">Lista de Produtos</h2>
 
       {/* Filtros */}
       <div className="flex gap-2 mb-4">
         <input
           type="text"
           placeholder="Pesquisar por nome"
-          className="border rounded p-2 w-full"
+          className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
         />
 
         <select
-          className="border rounded p-2"
+          className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={categoriaSelecionada}
           onChange={(e) => setCategoriaSelecionada(e.target.value)}
         >
@@ -53,9 +53,9 @@ export const ProductTable = () => {
       </div>
 
       {/* Tabela */}
-      <table className="w-full text-sm">
+      <table className="w-full text-sm text-gray-700">
         <thead>
-          <tr className="text-orange-600 border-b">
+          <tr className="text-purple-600 border-b">
             <th className="py-2 text-left">id/nome</th>
             <th className="py-2 text-left">categoria</th>
             <th className="py-2 text-left">disponíveis</th>
@@ -66,7 +66,7 @@ export const ProductTable = () => {
         </thead>
         <tbody>
           {produtosFiltrados.map((produto) => (
-            <tr key={produto.id} className="border-b hover:bg-orange-50">
+            <tr key={produto.id} className="border-b hover:bg-purple-50">
               <td className="py-2">{produto.id}/{produto.nome}</td>
               <td>{produto.categoria}</td>
               <td>{produto.quantidade}</td>
@@ -75,8 +75,8 @@ export const ProductTable = () => {
                 {produto.status}
               </td>
               <td>
-                <button className="text-blue-500 mr-2">✏️</button>
-                <button className="text-red-500">🗑</button>
+                <button className="text-purple-600 hover:text-purple-800 mr-2">✏️</button>
+                <button className="text-red-500 hover:text-red-700">🗑</button>
               </td>
             </tr>
           ))}
