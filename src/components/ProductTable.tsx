@@ -1,34 +1,87 @@
+import { useState } from 'react';
+
 export interface Produto {
   id: number;
   nome: string;
   preco: number;
+  categoria: string;
+  quantidade: number;
+  status: 'Disponível' | 'Indisponível';
 }
 
 const produtosFake: Produto[] = [
-  { id: 1, nome: 'Notebook Gamer', preco: 4500 },
-  { id: 2, nome: 'Mouse Sem Fio', preco: 120 },
-  { id: 3, nome: 'Teclado Mecânico', preco: 280 },
+  { id: 1, nome: 'Notebook Gamer', preco: 4500, categoria: 'Eletrônicos', quantidade: 5, status: 'Disponível' },
+  { id: 2, nome: 'Mouse Sem Fio', preco: 120, categoria: 'Periféricos', quantidade: 10, status: 'Disponível' },
+  { id: 3, nome: 'Cadeira Gamer', preco: 900, categoria: 'Móveis', quantidade: 0, status: 'Indisponível' },
 ];
 
 export const ProductTable = () => {
+  const [busca, setBusca] = useState('');
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState('Todas');
+
+  const categorias = ['Todas', ...new Set(produtosFake.map(p => p.categoria))];
+
+  const produtosFiltrados = produtosFake.filter(p => {
+    const nomeMatch = p.nome.toLowerCase().includes(busca.toLowerCase());
+    const categoriaMatch = categoriaSelecionada === 'Todas' || p.categoria === categoriaSelecionada;
+    return nomeMatch && categoriaMatch;
+  });
+
   return (
-    <table className="min-w-full bg-white shadow-md rounded overflow-hidden">
-      <thead>
-        <tr className="bg-purple-500 text-white">
-          <th className="py-3 px-4 text-left">ID</th>
-          <th className="py-3 px-4 text-left">Nome</th>
-          <th className="py-3 px-4 text-left">Preço</th>
-        </tr>
-      </thead>
-      <tbody>
-        {produtosFake.map((produto) => (
-          <tr key={produto.id} className="border-b border-purple-100 hover:bg-purple-50">
-            <td className="py-2 px-4">{produto.id}</td>
-            <td className="py-2 px-4">{produto.nome}</td>
-            <td className="py-2 px-4">R$ {produto.preco.toFixed(2)}</td>
+    <div className="bg-white p-4 rounded shadow">
+      <h2 className="text-lg font-semibold text-orange-600 mb-3">Lista de Produtos</h2>
+
+      {/* Filtros */}
+      <div className="flex gap-2 mb-4">
+        <input
+          type="text"
+          placeholder="Pesquisar por nome"
+          className="border rounded p-2 w-full"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+        />
+
+        <select
+          className="border rounded p-2"
+          value={categoriaSelecionada}
+          onChange={(e) => setCategoriaSelecionada(e.target.value)}
+        >
+          {categorias.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Tabela */}
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-orange-600 border-b">
+            <th className="py-2 text-left">id/nome</th>
+            <th className="py-2 text-left">categoria</th>
+            <th className="py-2 text-left">disponíveis</th>
+            <th className="py-2 text-left">valor</th>
+            <th className="py-2 text-left">status</th>
+            <th className="py-2 text-left">ações</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {produtosFiltrados.map((produto) => (
+            <tr key={produto.id} className="border-b hover:bg-orange-50">
+              <td className="py-2">{produto.id}/{produto.nome}</td>
+              <td>{produto.categoria}</td>
+              <td>{produto.quantidade}</td>
+              <td>R${produto.preco}</td>
+              <td className={produto.status === 'Disponível' ? 'text-green-600' : 'text-red-600'}>
+                {produto.status}
+              </td>
+              <td>
+                <button className="text-blue-500 mr-2">✏️</button>
+                <button className="text-red-500">🗑</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };

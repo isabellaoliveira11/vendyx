@@ -2,7 +2,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
-import Products from '../pages/Products'; // ⬅️ adiciona isso
+import ProductManager from '../components/ProductManager';
+import Sales from '../pages/Sales'; // 👈 importa a nova página
 
 function AppRoutes() {
   return (
@@ -10,8 +11,9 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/produtos" element={<Products />} /> {/* ⬅️ nova rota */}
-        
+<Route path="/produtos" element={<ProductManager />} />
+                <Route path="/vendas" element={<Sales />} /> {/* 👈 nova rota aqui */}
+
       </Routes>
     </BrowserRouter>
   );
