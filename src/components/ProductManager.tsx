@@ -1,10 +1,16 @@
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
-import ProductForm from './ProductForm';
-import CategoryManager from './CategoryManager';
-import { ProductTable } from '../components/ProductTable';
+import { useState } from 'react'
+import Navbar from '../components/Navbar'
+import Sidebar from '../components/Sidebar'
+import ProductForm from '../components/ProductForm'
+import ProductTable from '../components/ProductTable'
 
 function ProductManager() {
+  const [atualizarLista, setAtualizarLista] = useState(false)
+
+  const refreshList = () => {
+    setAtualizarLista(prev => !prev)
+  }
+
   return (
     <>
       <Navbar />
@@ -12,7 +18,6 @@ function ProductManager() {
         <Sidebar />
 
         <main className="ml-60 flex-1 p-6">
-          {/* Título da página */}
           <h2 className="text-2xl font-bold text-purple-800 mb-1">
             Produtos e categorias
           </h2>
@@ -20,27 +25,21 @@ function ProductManager() {
             Atualmente há <span className="text-orange-500 font-semibold">3 produtos</span> cadastrados e disponíveis
           </p>
 
-          {/* Grid geral */}
           <div className="grid grid-cols-3 gap-6">
-            {/* COLUNA ESQUERDA: Lista de produtos */}
             <div className="col-span-2 bg-white p-6 rounded-xl shadow-md">
-              <ProductTable />
+              <ProductTable key={atualizarLista.toString()} />
             </div>
 
-            {/* COLUNA DIREITA: Adicionar produto e categorias */}
             <div className="col-span-1 space-y-6">
               <div className="bg-white p-6 rounded-xl shadow-md">
-                <ProductForm />
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-md">
-                <CategoryManager />
+                <ProductForm onProductAdded={refreshList} categorias={[]} />
               </div>
             </div>
           </div>
         </main>
       </div>
     </>
-  );
+  )
 }
 
-export default ProductManager;
+export default ProductManager

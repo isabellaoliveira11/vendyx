@@ -1,7 +1,7 @@
 import Fastify from 'fastify'
 import fastifyCors from '@fastify/cors'
 import fastifyFormbody from '@fastify/formbody'
-import { userRoutes } from './routes/users'
+import { userRoutes } from './routes/userRoutes' // Nome do arquivo corrigido
 import { categoryRoutes } from './routes/categoryRoutes'
 import { productRoutes } from './routes/productRoutes'
 import { saleRoutes } from './routes/saleRoutes'
@@ -25,15 +25,9 @@ app.get('/', async () => {
   return { message: 'Backend Vendyx online! 💜' }
 })
 
-app.post('/login', async (request, reply) => {
-  const { email, password } = request.body as { email: string; password: string }
-
-  if (email === 'admin@vendyx.com' && password === '123456') {
-    return reply.send({ message: 'Login successful', token: 'fake-jwt-token' })
-  } else {
-    return reply.status(401).send({ error: 'Email or password is incorrect' })
-  }
-})
+// A rota de login duplicada foi removida.
+// A rota de login agora será tratada pela função loginUser do seu controller,
+// que foi registrada no userRoutes.
 
 app.listen({ port: 3333 }, () => {
   console.log('🚀 Server running at http://localhost:3333')
