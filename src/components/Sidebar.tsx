@@ -6,15 +6,20 @@ import {
   FaChartBar,
   FaUsers,
   FaInfoCircle,
-  FaSync, // Mantido, se quiser a animação
+  FaSync,
+  FaChevronDown,
+  FaChevronUp,
 } from 'react-icons/fa';
+import { useState } from 'react';
 
 function Sidebar() {
   const location = useLocation();
+  const [isProductsOpen, setIsProductsOpen] = useState(location.pathname.includes('/produtos') || location.pathname.includes('/categorias'));
+
+  const toggleProductsMenu = () => setIsProductsOpen((prev) => !prev);
 
   const navItems = [
     { to: '/home', icon: <FaHome />, label: 'Home' },
-    { to: '/produtos', icon: <FaBox />, label: 'Produtos' },
     { to: '/vendas', icon: <FaShoppingCart />, label: 'Vendas' },
     { to: '/relatorios', icon: <FaChartBar />, label: 'Relatórios' },
     { to: '/usuarios', icon: <FaUsers />, label: 'Usuários' },
@@ -22,17 +27,54 @@ function Sidebar() {
   ];
 
   return (
-    // Ajustado para bg-purple-700 para um tom mais escuro e "premium"
-    <div className="h-screen w-60 bg-purple-700 text-white flex flex-col justify-between fixed left-0 top-0 z-50 shadow-lg"> {/* Adicionado shadow-lg */}
+    <div className="h-screen w-60 bg-purple-700 text-white flex flex-col justify-between fixed left-0 top-0 z-50 shadow-lg">
       <div>
-        {/* Padding vertical ajustado para py-7 para um pouco mais de respiro */}
-        <div className="flex items-center justify-center py-7 text-3xl font-bold border-b border-white/10"> {/* text-3xl e border-white/10 para borda mais sutil */}
-          <FaSync className="mr-3 animate-spin" /> {/* mr-3 para mais espaço */}
+        <div className="flex items-center justify-center py-7 text-3xl font-bold border-b border-white/10">
+          <FaSync className="mr-3 animate-spin" />
           VendyX
         </div>
 
-        {/* mt-10 para mais espaço entre o logo e o menu, gap-3 para espaço entre os itens */}
         <nav className="flex flex-col gap-3 mt-10 px-4">
+          {/* Item com submenu (Produtos) */}
+          <div>
+            <button
+              onClick={toggleProductsMenu}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-left font-medium transition-all duration-200
+                ${location.pathname.includes('/produtos') || location.pathname.includes('/categorias')
+                  ? 'bg-purple-800 text-white shadow-md'
+                  : 'hover:bg-purple-600 text-white/90'
+                }`}
+            >
+              <span className="flex items-center gap-3">
+                <FaBox /> Produtos
+              </span>
+              {isProductsOpen ? <FaChevronUp size={14} /> : <FaChevronDown size={14} />}
+            </button>
+
+            {/* Submenu */}
+            {isProductsOpen && (
+              <div className="ml-6 mt-2 flex flex-col gap-2 text-sm">
+                <Link
+                  to="/produtos"
+                  className={`pl-2 py-1 rounded-md transition ${
+                    location.pathname === '/produtos' ? 'bg-purple-600 text-white' : 'hover:bg-purple-500 text-white/90'
+                  }`}
+                >
+                   Gerenciar Produtos
+                </Link>
+                <Link
+                  to="/categorias"
+                  className={`pl-2 py-1 rounded-md transition ${
+                    location.pathname === '/categorias' ? 'bg-purple-600 text-white' : 'hover:bg-purple-500 text-white/90'
+                  }`}
+                >
+                   Categorias
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Itens normais */}
           {navItems.map((item) => {
             const isActive = location.pathname === item.to;
             return (
@@ -41,8 +83,8 @@ function Sidebar() {
                 to={item.to}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200
                   ${isActive
-                    ? 'bg-purple-800 font-semibold text-white shadow-md' // Cor mais escura para ativo, font-semibold
-                    : 'hover:bg-purple-600 text-white/90' // Hover na cor da sidebar, texto um pouco mais branco
+                    ? 'bg-purple-800 font-semibold text-white shadow-md'
+                    : 'hover:bg-purple-600 text-white/90'
                   }`}
               >
                 {item.icon} {item.label}
@@ -52,10 +94,9 @@ function Sidebar() {
         </nav>
       </div>
 
-      {/* Ajustado para um padding py-5 e border-white/10 */}
       <div className="text-center text-sm py-5 border-t border-white/10">
         Isabela Oliveira<br />
-        <span className="text-xs opacity-80">(ADMIN)</span> {/* opacity-80 para o texto da função */}
+        <span className="text-xs opacity-80">(ADMIN)</span>
       </div>
     </div>
   );

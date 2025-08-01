@@ -17,11 +17,34 @@ export const createCategory = async (request: FastifyRequest, reply: FastifyRepl
     return reply.status(400).send({ error: 'Nome da categoria é obrigatório.' });
   }
 
+  const existing = await prisma.category.findFirst({ where: { name } });
+  if (existing) {
+    return reply.status(409).send({ error: 'Categoria já existe.' });
+  }
+
   const newCategory = await prisma.category.create({
     data: { name },
   });
 
   return reply.status(201).send(newCategory);
+};
+
+export const deleteCategory = async (
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply
+) => {
+  const { id } = request.params;
+
+  console.log('[DELETE] Tentando deletar categoria com id:', id);
+
+  try {
+    const deleted = await prisma.category.delete({ where: { id } });
+    console.log('[DELETE] Sucesso ao deletar:', deleted);
+    return reply.status(204).send();
+  } catch (error) {
+    console.error('[DELETE] Erro ao deletar categoria:', error);
+    return reply.status(404).send({ error: 'Categoria não encontrada ou possui produtos vinculados.' });
+  }
 };
 
 export const updateCategory = async (
@@ -46,4 +69,3 @@ export const updateCategory = async (
     return reply.status(404).send({ error: 'Categoria não encontrada.' });
   }
 };
-
