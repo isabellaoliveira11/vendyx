@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
+import { Listbox, Transition } from '@headlessui/react'
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { createProduct } from '../services/productService.ts'
 
 interface ProductFormProps {
@@ -10,7 +12,7 @@ function ProductForm({ categorias, onProductAdded }: ProductFormProps) {
   const [nome, setNome] = useState('')
   const [precoRaw, setPrecoRaw] = useState('')
   const [quantidade, setQuantidade] = useState('')
-  const [categoria, setCategoria] = useState('')
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState<{ id: string; name: string } | null>(null)
 
   const formatarParaReal = (valor: string) => {
     const numero = parseFloat(valor || '0') / 100
@@ -21,7 +23,7 @@ function ProductForm({ categorias, onProductAdded }: ProductFormProps) {
   }
 
   const adicionarProduto = async () => {
-    if (!nome || !precoRaw || !quantidade || !categoria) {
+    if (!nome || !precoRaw || !quantidade || !categoriaSelecionada) {
       console.error('Preencha todos os campos')
       return
     }
@@ -31,14 +33,13 @@ function ProductForm({ categorias, onProductAdded }: ProductFormProps) {
         name: nome,
         price: Number(precoRaw) / 100,
         stock: Number(quantidade),
-        categoryId: categoria,
+        categoryId: categoriaSelecionada.id,
       })
 
-      console.log('Produto adicionado com sucesso!')
       setNome('')
       setPrecoRaw('')
       setQuantidade('')
-      setCategoria('')
+      setCategoriaSelecionada(null)
       onProductAdded()
     } catch (error) {
       console.error('Erro ao adicionar produto', error)
@@ -79,37 +80,54 @@ function ProductForm({ categorias, onProductAdded }: ProductFormProps) {
           onChange={(e) => setQuantidade(e.target.value)}
         />
 
-        {/* Combobox estilizada */}
-        <div className="relative">
-          <select
-            className="appearance-none w-full border border-gray-300 text-gray-700 bg-white rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm"
-            value={categoria}
-            onChange={(e) => setCategoria(e.target.value)}
-          >
-            <option disabled value="">
-              🛒 Selecione uma categoria
-            </option>
-            {categorias.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-purple-500">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
+        {/* Combobox com Headless UI */}
+        <div className="w-full">
+          <Listbox value={categoriaSelecionada} onChange={setCategoriaSelecionada}>
+            <div className="relative">
+              <Listbox.Button className="relative w-full cursor-pointer rounded-lg border border-gray-300 bg-white py-2 pl-4 pr-10 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <span className="block truncate">
+                  {categoriaSelecionada ? categoriaSelecionada.name : '🛒 Selecione uma categoria'}
+                </span>
+                <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronUpDownIcon className="h-5 w-5 text-purple-500" />
+                </span>
+              </Listbox.Button>
+
+              <Transition
+                as={Fragment}
+                leave="transition ease-in duration-100"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  {categorias.map((cat) => (
+                    <Listbox.Option
+                      key={cat.id}
+                      value={cat}
+                      className={({ active }) =>
+                        `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
+                          active ? 'bg-purple-100 text-purple-900' : 'text-gray-900'
+                        }`
+                      }
+                    >
+                      {({ selected }) => (
+                        <>
+                          <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>
+                            {cat.name}
+                          </span>
+                          {selected ? (
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-purple-600">
+                              <CheckIcon className="h-5 w-5" />
+                            </span>
+                          ) : null}
+                        </>
+                      )}
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </Transition>
+            </div>
+          </Listbox>
         </div>
 
         <button
