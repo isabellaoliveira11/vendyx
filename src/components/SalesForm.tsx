@@ -1,12 +1,14 @@
 import { useEffect, useState, Fragment } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
-import { Check, CaretDown, ShoppingCartSimple, Trash } from 'phosphor-react';
+import { Check, CaretDown, ShoppingCartSimple, Trash, Percent } from 'phosphor-react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 interface Produto {
   id: string;
   name: string;
   price: number;
+  stock: number;
 }
 
 interface CarrinhoItem {
@@ -27,30 +29,54 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
   const [carrinho, setCarrinho] = useState<CarrinhoItem[]>([]);
   const [pagamento, setPagamento] = useState<string>(formasPagamento[0]);
   const [observacao, setObservacao] = useState('');
-  const [desconto, setDesconto] = useState<number>(0);
+  const [descontoPercentual, setDescontoPercentual] = useState<number>(0);
   const [cliente, setCliente] = useState('');
   const [clienteErro, setClienteErro] = useState<string | null>(null);
 
   useEffect(() => {
     axios.get('http://localhost:3333/products')
       .then(res => setProdutos(res.data))
-      .catch(err => console.error('Erro ao buscar produtos', err));
+      .catch(err => {
+        console.error('Erro ao buscar produtos', err);
+        toast.error('Erro ao carregar lista de produtos.');
+      });
   }, []);
 
   const adicionarAoCarrinho = () => {
     if (!produtoSelecionado || quantidade <= 0) {
-      alert('Selecione um produto e uma quantidade válida.');
+      toast.error('Selecione um produto e uma quantidade válida.');
       return;
     }
-    setCarrinho(prev => [...prev, { produto: produtoSelecionado, quantidade }]);
-    setQuantidade(1); // Reseta a quantidade para 1 após adicionar
-    setProdutoSelecionado(null); // Limpa a seleção do produto
+
+    const itemExistente = carrinho.find(item => item.produto.id === produtoSelecionado.id);
+    const quantidadeNoCarrinho = itemExistente ? itemExistente.quantidade : 0;
+    const quantidadeTotalDesejada = quantidadeNoCarrinho + quantidade;
+
+    if (produtoSelecionado.stock < quantidadeTotalDesejada) {
+        toast.error(`Estoque insuficiente para "${produtoSelecionado.name}". Disponível: ${produtoSelecionado.stock}. Você já tem ${quantidadeNoCarrinho} no carrinho.`);
+        return;
+    }
+
+    if (itemExistente) {
+        setCarrinho(prev => prev.map(item =>
+            item.produto.id === produtoSelecionado.id
+                ? { ...item, quantidade: quantidadeTotalDesejada }
+                : item
+        ));
+    } else {
+        setCarrinho(prev => [...prev, { produto: produtoSelecionado, quantidade }]);
+    }
+    
+    setQuantidade(1);
+    setProdutoSelecionado(null);
+    toast.success('Item adicionado ao carrinho!');
   };
 
   const removerItem = (index: number) => {
     const novoCarrinho = [...carrinho];
     novoCarrinho.splice(index, 1);
     setCarrinho(novoCarrinho);
+    toast('Item removido do carrinho.', { icon: '👋' });
   };
 
   const resetForm = () => {
@@ -58,7 +84,7 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
     setCarrinho([]);
     setObservacao('');
     setPagamento(formasPagamento[0]);
-    setDesconto(0);
+    setDescontoPercentual(0);
     setProdutoSelecionado(null);
     setQuantidade(1);
     setClienteErro(null);
@@ -75,13 +101,17 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
     }
 
     if (carrinho.length === 0) {
-      alert('Adicione pelo menos um item ao carrinho para finalizar a venda.');
+      toast.error('Adicione pelo menos um item ao carrinho para finalizar a venda.');
       hasError = true;
     }
 
     if (hasError) {
       return;
     }
+
+    const valorDescontoCalculado = total * (descontoPercentual / 100);
+    const descontoFinalParaBackend = Math.min(Math.max(0, valorDescontoCalculado), total);
+
 
     const payload = {
       clientName: cliente,
@@ -90,24 +120,35 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
         quantity: item.quantidade,
         price: item.produto.price
       })),
-      paymentMethod: pagamento, // Adicionado ao payload
-      discount: desconto, // Adicionado ao payload
-      observation: observacao // Adicionado ao payload
+      paymentMethod: pagamento,
+      discount: descontoFinalParaBackend,
+      observation: observacao
     };
 
     try {
-      await axios.post('http://localhost:3333/sales', payload);
-      alert('Venda finalizada com sucesso!');
-      onVendaCriada(); // Notifica o componente pai
-      resetForm(); // Reseta o formulário
+      await toast.promise(
+        axios.post('http://localhost:3333/sales', payload),
+        {
+          loading: 'Finalizando venda...',
+          success: 'Venda finalizada com sucesso!',
+          error: (err) => {
+            const backendErrorMsg = err.response?.data?.error || 'Erro desconhecido ao finalizar venda.';
+            console.error('Erro ao finalizar venda:', err);
+            return backendErrorMsg;
+          },
+        }
+      );
+      onVendaCriada();
+      resetForm();
     } catch (error) {
-      console.error('Erro ao finalizar venda', error);
-      alert('Erro ao finalizar venda. Verifique o console para mais detalhes.');
+      console.error('Erro capturado após o toast.promise:', error);
     }
   };
 
   const total = carrinho.reduce((acc, item) => acc + item.produto.price * item.quantidade, 0);
-  const totalComDesconto = total - desconto;
+  const valorDescontoAplicadoDisplay = total * (descontoPercentual / 100);
+  const totalComDesconto = total - valorDescontoAplicadoDisplay;
+  const finalPriceDisplayed = Math.max(0, totalComDesconto);
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md w-full border border-purple-200">
@@ -126,7 +167,7 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
           value={cliente}
           onChange={(e) => {
             setCliente(e.target.value);
-            if (e.target.value.trim()) setClienteErro(null); // Limpa o erro ao digitar
+            if (e.target.value.trim()) setClienteErro(null);
           }}
           className={`border rounded-md p-2 w-full transition-colors ${clienteErro ? 'border-red-500 ring-red-200 ring-2' : 'border-gray-300 focus:border-purple-500 focus:ring-purple-200 focus:ring-2'}`}
           placeholder="Nome do cliente"
@@ -171,7 +212,7 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
                           <span
                             className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}
                           >
-                            {produto.name} (R$ {produto.price.toFixed(2)})
+                            {produto.name} (R$ {produto.price.toFixed(2)}) - Estoque: {produto.stock}
                           </span>
                           {selected ? (
                             <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-purple-600">
@@ -200,11 +241,12 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
           />
         </div>
 
+        {/* BOTÃO ADICIONAR ITEM - Tamanho ajustado */}
         <button
           onClick={adicionarAoCarrinho}
-          className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition duration-200 ease-in-out self-stretch flex items-center justify-center gap-1"
+          className="bg-purple-600 text-white px-3 py-2 rounded-md hover:bg-purple-700 transition duration-200 ease-in-out self-end flex items-center justify-center gap-1 text-sm font-semibold h-[42px] min-w-[100px]" // Ajustes: h-[42px] para alinhar com input, min-w para largura mínima
         >
-          + Adicionar Item
+          + Adicionar
         </button>
       </div>
 
@@ -213,17 +255,17 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-separate border-spacing-y-2">
             <thead>
-              <tr className="text-left text-purple-700">
-                <th className="bg-purple-100 px-3 py-2 rounded-l-lg">Produto</th>
-                <th className="bg-purple-100 px-3 py-2">Qtd.</th>
-                <th className="bg-purple-100 px-3 py-2">Unitário</th>
-                <th className="bg-purple-100 px-3 py-2">Total</th>
-                <th className="bg-purple-100 px-3 py-2 rounded-r-lg">Ações</th>
+              <tr className="text-left bg-purple-100 text-purple-700 uppercase font-semibold text-xs rounded-lg">
+                <th className="py-3 px-3 rounded-l-lg">Produto</th>
+                <th className="py-3 px-3">Qtd.</th>
+                <th className="py-3 px-3">Unitário</th>
+                <th className="py-3 px-3">Total</th>
+                <th className="py-3 px-3 rounded-r-lg">Ações</th>
               </tr>
             </thead>
             <tbody>
               {carrinho.map((item, index) => (
-                <tr key={index} className="bg-purple-50 hover:bg-purple-100 transition duration-150 ease-in-out">
+                <tr key={index} className="bg-white hover:bg-gray-50 transition duration-150 ease-in-out shadow-sm rounded-lg">
                   <td className="px-3 py-2 rounded-l-lg">{item.produto.name}</td>
                   <td className="px-3 py-2">{item.quantidade}</td>
                   <td className="px-3 py-2">R$ {item.produto.price.toFixed(2)}</td>
@@ -254,12 +296,12 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
       <hr className="my-6 border-purple-100" />
 
       {/* Resumo e Observações */}
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
-        {/* Pagamento */}
-        <div className="flex flex-col">
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-end flex-wrap"> {/* Adicionado flex-wrap para melhor responsividade */}
+        {/* Pagamento - Largura controlada com w-48 */}
+        <div className="flex flex-col flex-shrink-0 w-48"> {/* w-48 para largura fixa, flex-shrink-0 para não espremer */}
           <label className="block text-sm font-medium text-gray-700 mb-1">Forma de pagamento</label>
           <Listbox value={pagamento} onChange={setPagamento}>
-            <div className="relative w-36">
+            <div className="relative w-full">
               <Listbox.Button className="relative w-full cursor-pointer rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 sm:text-sm">
                 <span className="block truncate">{pagamento}</span>
                 <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -303,34 +345,29 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
           </Listbox>
         </div>
 
-        {/* Desconto */}
-        <div className="flex flex-col">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Desconto (R$)</label>
-          <input
-            type="number"
-            className="border border-gray-300 rounded-md p-2 w-24 text-center focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors"
-            value={desconto}
-            onChange={(e) => setDesconto(Number(e.target.value))}
-            min={0}
-          />
-        </div>
-
-        {/* Observação */}
-        <div className="flex flex-col flex-1 w-full">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Observação</label>
-          <input
-            type="text"
-            className="border border-gray-300 rounded-md p-2 w-full focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors"
-            value={observacao}
-            onChange={(e) => setObservacao(e.target.value)}
-            placeholder="Alguma observação sobre a venda..."
-          />
+        {/* Desconto em Porcentagem */}
+        <div className="flex flex-col flex-shrink-0 w-32"> {/* Largura fixa para o desconto */}
+          <label className="block text-sm font-medium text-gray-700 mb-1">Desconto (%)</label>
+          <div className="relative">
+            <input
+              type="number"
+              className="border border-gray-300 rounded-md p-2 w-full text-center focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors" // w-full dentro da div de largura fixa
+              value={descontoPercentual}
+              onChange={(e) => setDescontoPercentual(Number(e.target.value))}
+              min={0}
+              max={100}
+              step={0.1}
+            />
+            <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500">
+              <Percent size={18} />
+            </span>
+          </div>
         </div>
 
         {/* Total */}
-        <div className="ml-auto text-right mt-4 md:mt-0">
+        <div className="ml-auto text-right flex-shrink-0 mt-4 md:mt-0">
           <p className="text-sm text-gray-600">Subtotal: <span className="font-medium">R$ {total.toFixed(2)}</span></p>
-          <p className="text-lg font-bold text-purple-800">Valor Final: <span className="text-green-600">R$ {totalComDesconto.toFixed(2)}</span></p>
+          <p className="text-lg font-bold text-purple-800">Valor Final: <span className="text-green-600">R$ {finalPriceDisplayed.toFixed(2)}</span></p>
         </div>
       </div>
 

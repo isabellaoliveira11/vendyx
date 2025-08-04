@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Sale" ALTER COLUMN "discount" DROP DEFAULT,
+ALTER COLUMN "paymentMethod" DROP DEFAULT;

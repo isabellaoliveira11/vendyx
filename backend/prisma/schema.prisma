@@ -29,12 +29,16 @@ model Product {
 }
 
 model Sale {
-  id          String     @id @default(uuid())
-  clientName  String
-  total       Float
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  items       SaleItem[]
+  id            String    @id @default(uuid())
+  clientName    String
+  total         Float
+  itemsCount    Int       
+   paymentMethod String    
+  discount      Float     
+  observation   String?  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  items         SaleItem[]
 }
 
 model SaleItem {
