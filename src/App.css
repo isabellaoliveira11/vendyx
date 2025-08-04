@@ -1,41 +1,24 @@
+/* src/App.css */
 
-#root {
+/* Estilos de reset e base */
+body, #root {
   height: 100%;
+  font-family: 'Inter', sans-serif; /* Use uma fonte mais moderna */
+  background-color: #f9fafb; /* gray-50 para o fundo */
+  color: #1f2937; /* gray-800 para o texto padrão */
 }
 
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+/* Esconder barra de rolagem em navegadores modernos */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+::-webkit-scrollbar-thumb {
+  background-color: #d1d5db; /* gray-300 */
+  border-radius: 4px;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+::-webkit-scrollbar-track {
+  background-color: #f3f4f6; /* gray-100 */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
+/* Remova TUDO o que estava aqui sobre .rdp ou .react-calendar */
