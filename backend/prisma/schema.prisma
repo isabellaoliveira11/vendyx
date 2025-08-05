@@ -51,3 +51,16 @@ model SaleItem {
   sale      Sale     @relation(fields: [saleId], references: [id])
   product   Product  @relation(fields: [productId], references: [id])
 }
+
+model Client {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String? // O '?' torna o campo opcional
+  address   String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("clients")
+}
