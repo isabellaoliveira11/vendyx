@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Package, MagnifyingGlass } from 'phosphor-react';
 import toast from 'react-hot-toast';
+
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import ProductForm from '../components/ProductForm';
 import ProductTable from '../components/ProductTable';
 import { API_URL } from '../config/api';
 
-// Interfaces
 interface Product {
   id: string;
   name: string;
@@ -28,7 +28,7 @@ interface Category {
 
 function ProductManager() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categorias, setCategorias] = useState<Category[]>([]); // O estado se chama 'categorias'
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -41,7 +41,7 @@ function ProductManager() {
         axios.get(`${API_URL}/categories`)
       ]);
       setProducts(productsRes.data);
-      setCategorias(categoriesRes.data);
+      setCategories(categoriesRes.data);
     } catch (err) {
       console.error('Erro ao buscar dados', err);
       toast.error('Erro ao carregar produtos ou categorias.');
@@ -56,7 +56,7 @@ function ProductManager() {
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  );
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
@@ -72,12 +72,10 @@ function ProductManager() {
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
 
-        <main className="ml-60 flex-1 p-6">
+        <main className="flex-1 p-6">
           <div className="flex items-center gap-3 mb-1">
             <Package size={32} className="text-purple-700" weight="duotone" />
-            <h2 className="text-2xl font-bold text-gray-800">
-              Produtos
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-800">Produtos</h2>
           </div>
           <p className="text-sm text-gray-600 mb-6 -mt-1">
             Atualmente há <span className="text-purple-700 font-semibold">{products.length} produtos</span> cadastrados e em estoque.
@@ -95,6 +93,7 @@ function ProductManager() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
+
               <ProductTable
                 products={filteredProducts}
                 loading={loading}
@@ -106,7 +105,7 @@ function ProductManager() {
             <div className="col-span-1">
               <div className="bg-white p-6 rounded-xl shadow-md border border-purple-100">
                 <ProductForm
-                  categories={categorias} // <-- CORRIGIDO AQUI: 'categories' em vez de 'categorias'
+                  categories={categories}
                   onProductAction={fetchProductsAndCategories}
                   editingProduct={editingProduct}
                   onCancelEdit={handleCancelEdit}

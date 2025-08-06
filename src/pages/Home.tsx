@@ -17,6 +17,9 @@ import {
 } from 'phosphor-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+
+import Navbar from '../components/Navbar';
+import Sidebar from '../components/Sidebar';
 import { Calendar } from '../components/Calendar';
 
 interface Sale {
@@ -96,112 +99,120 @@ function Home() {
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-            <Receipt size={32} className="text-purple-700" weight="duotone" />
-            Início
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">{currentDateString}</p>
-        </div>
-        <button
-          onClick={() => navigate('/vendas')}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg font-medium transition duration-300 ease-in-out shadow-md text-sm flex items-center gap-2">
-          <PlusCircle size={20} weight="bold" /> Nova Venda
-        </button>
-      </div>
+      <Navbar />
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="flex flex-col gap-6 w-full lg:w-2/3">
-          <div className="bg-purple-600 text-white p-6 rounded-xl shadow-md w-full flex items-center gap-4">
-            <HandWaving size={48} weight="duotone" className="text-purple-200" />
+        <main className="flex-1 p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <div>
-              <h3 className="text-2xl font-bold mb-1">
-                Seja Bem-vinda, <span className="uppercase">Isabela Oliveira</span>!
-              </h3>
-              <p className="text-base opacity-95">Tenha um ótimo dia, e boas vendas!</p>
+              <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
+                <Receipt size={32} className="text-purple-700" weight="duotone" />
+                Início
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">{currentDateString}</p>
             </div>
+            <button
+              onClick={() => navigate('/vendas')}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg font-medium transition duration-300 ease-in-out shadow-md text-sm flex items-center gap-2"
+            >
+              <PlusCircle size={20} weight="bold" /> Nova Venda
+            </button>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-md flex-grow">
-            <h4 className="text-xl font-semibold text-gray-800 mb-5">Últimas Vendas</h4>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left border-b border-gray-200 text-gray-500 uppercase font-semibold text-xs">
-                    <th className="py-3 px-2 whitespace-nowrap">Cod. Venda</th>
-                    <th className="py-3 px-2 whitespace-nowrap">Cliente</th>
-                    <th className="py-3 px-2 whitespace-nowrap">Data</th>
-                    <th className="py-3 px-2 whitespace-nowrap">Forma de Pagamento</th>
-                    <th className="py-3 px-2 whitespace-nowrap">Valor da Venda</th>
-                    <th className="py-3 px-2 whitespace-nowrap">Ação</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loadingSales ? (
-                    <tr>
-                      <td colSpan={6} className="py-6 text-center text-gray-500">
-                        Carregando vendas...
-                      </td>
-                    </tr>
-                  ) : sales.length > 0 ? (
-                    sales.map((venda: Sale) => (
-                      <tr key={venda.id} className="border-b border-gray-100 hover:bg-gray-50 transition duration-150 ease-in-out">
-                        <td className="py-3 px-2 text-gray-800">{venda.id.slice(0, 8)}</td>
-                        <td className="py-3 px-2 text-gray-700">{venda.clientName || 'Cliente Padrão'}</td>
-                        <td className="py-3 px-2 text-gray-700 whitespace-nowrap">
-                          {isValid(new Date(venda.createdAt)) ? format(new Date(venda.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : 'Data Inválida'}
-                        </td>
-                        <td className="py-3 px-2 text-gray-700">{venda.paymentMethod || 'Não Informado'}</td>
-                        <td className="py-3 px-2 text-green-600 font-semibold">{formatCurrency(venda.total)}</td>
-                        <td className="py-3 px-2">
-                          <button className="text-lg text-gray-500 hover:text-purple-600 transition-colors duration-200" title="Ver Detalhes">
-                            <Info size={20} />
-                          </button>
-                        </td>
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex flex-col gap-6 w-full lg:w-2/3">
+              <div className="bg-purple-600 text-white p-6 rounded-xl shadow-md w-full flex items-center gap-4">
+                <HandWaving size={48} weight="duotone" className="text-purple-200" />
+                <div>
+                  <h3 className="text-2xl font-bold mb-1">
+                    Seja Bem-vinda, <span className="uppercase">Isabela Oliveira</span>!
+                  </h3>
+                  <p className="text-base opacity-95">Tenha um ótimo dia, e boas vendas!</p>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-md flex-grow">
+                <h4 className="text-xl font-semibold text-gray-800 mb-5">Últimas Vendas</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left border-b border-gray-200 text-gray-500 uppercase font-semibold text-xs">
+                        <th className="py-3 px-2 whitespace-nowrap">Cod. Venda</th>
+                        <th className="py-3 px-2 whitespace-nowrap">Cliente</th>
+                        <th className="py-3 px-2 whitespace-nowrap">Data</th>
+                        <th className="py-3 px-2 whitespace-nowrap">Forma de Pagamento</th>
+                        <th className="py-3 px-2 whitespace-nowrap">Valor da Venda</th>
+                        <th className="py-3 px-2 whitespace-nowrap">Ação</th>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="py-6 text-center text-gray-500">
-                        Nenhuma venda recente encontrada.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody>
+                      {loadingSales ? (
+                        <tr>
+                          <td colSpan={6} className="py-6 text-center text-gray-500">
+                            Carregando vendas...
+                          </td>
+                        </tr>
+                      ) : sales.length > 0 ? (
+                        sales.map((venda: Sale) => (
+                          <tr key={venda.id} className="border-b border-gray-100 hover:bg-gray-50 transition duration-150 ease-in-out">
+                            <td className="py-3 px-2 text-gray-800">{venda.id.slice(0, 8)}</td>
+                            <td className="py-3 px-2 text-gray-700">{venda.clientName || 'Cliente Padrão'}</td>
+                            <td className="py-3 px-2 text-gray-700 whitespace-nowrap">
+                              {isValid(new Date(venda.createdAt)) ? format(new Date(venda.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : 'Data Inválida'}
+                            </td>
+                            <td className="py-3 px-2 text-gray-700">{venda.paymentMethod || 'Não Informado'}</td>
+                            <td className="py-3 px-2 text-green-600 font-semibold">{formatCurrency(venda.total)}</td>
+                            <td className="py-3 px-2">
+                              <button className="text-lg text-gray-500 hover:text-purple-600 transition-colors duration-200" title="Ver Detalhes">
+                                <Info size={20} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={6} className="py-6 text-center text-gray-500">
+                            Nenhuma venda recente encontrada.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="flex flex-col gap-6 w-full lg:w-1/3">
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4">
-            <div className="bg-white p-5 rounded-xl shadow-md flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Total Vendido Hoje</p>
-                <p className="text-2xl font-extrabold text-purple-700">{formatCurrency(todaySalesValue)}</p>
+            <div className="flex flex-col gap-6 w-full lg:w-1/3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4">
+                <div className="bg-white p-5 rounded-xl shadow-md flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Total Vendido Hoje</p>
+                    <p className="text-2xl font-extrabold text-purple-700">{formatCurrency(todaySalesValue)}</p>
+                  </div>
+                  <Tag size={40} weight="duotone" className="text-purple-400 opacity-70" />
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-md flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Total Vendido no Mês</p>
+                    <p className="text-2xl font-extrabold text-purple-700">{formatCurrency(totalMonthSalesValue)}</p>
+                  </div>
+                  <CurrencyDollar size={40} weight="duotone" className="text-purple-400 opacity-70" />
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-md flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Produtos Cadastrados</p>
+                    <p className="text-2xl font-extrabold text-purple-700">{totalProductsCount}</p>
+                  </div>
+                  <Package size={40} weight="duotone" className="text-purple-400 opacity-70" />
+                </div>
               </div>
-              <Tag size={40} weight="duotone" className="text-purple-400 opacity-70" />
-            </div>
-            <div className="bg-white p-5 rounded-xl shadow-md flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Total Vendido no Mês</p>
-                <p className="text-2xl font-extrabold text-purple-700">{formatCurrency(totalMonthSalesValue)}</p>
+              <div className="bg-white p-4 rounded-xl shadow-md border border-purple-100 w-full h-full">
+                <Calendar />
               </div>
-              <CurrencyDollar size={40} weight="duotone" className="text-purple-400 opacity-70" />
-            </div>
-            <div className="bg-white p-5 rounded-xl shadow-md flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Produtos Cadastrados</p>
-                <p className="text-2xl font-extrabold text-purple-700">{totalProductsCount}</p>
-              </div>
-              <Package size={40} weight="duotone" className="text-purple-400 opacity-70" />
             </div>
           </div>
-          <div className="bg-white p-4 rounded-xl shadow-md border border-purple-100 w-full h-full">
-            <Calendar />
-          </div>
-        </div>
+        </main>
       </div>
     </>
   );

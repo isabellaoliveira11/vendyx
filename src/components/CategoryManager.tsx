@@ -3,18 +3,17 @@ import axios from 'axios';
 import {
   Plus,
   SpinnerGap,
-  Trash,
-  PencilSimple,
-  Check,
-  X,
+  Tag,
 } from 'phosphor-react';
+import CategoryTable from '../components/CategoryTable';
+import { API_URL } from '../config/api';
 
 interface Categoria {
   id: string;
   name: string;
 }
 
-function CategoryManager() {
+export default function CategoryManager() {
   const [novaCategoria, setNovaCategoria] = useState('');
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(false);
@@ -26,7 +25,7 @@ function CategoryManager() {
   const fetchCategorias = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:3333/categories');
+      const response = await axios.get(`${API_URL}/categories`);
       setCategorias(response.data);
     } catch (err) {
       console.error('Erro ao buscar categorias', err);
@@ -43,7 +42,7 @@ function CategoryManager() {
     if (!novaCategoria.trim()) return;
     setIsAdding(true);
     try {
-      const response = await axios.post('http://localhost:3333/categories', {
+      const response = await axios.post(`${API_URL}/categories`, {
         name: novaCategoria.trim(),
       });
       setCategorias([...categorias, response.data]);
@@ -58,7 +57,7 @@ function CategoryManager() {
   const removerCategoria = async (id: string) => {
     if (!window.confirm('Tem certeza que deseja remover esta categoria?')) return;
     try {
-      await axios.delete(`http://localhost:3333/categories/${id}`);
+      await axios.delete(`${API_URL}/categories/${id}`);
       setCategorias(categorias.filter((c) => c.id !== id));
     } catch (err) {
       alert('Erro ao remover categoria');
@@ -78,7 +77,7 @@ function CategoryManager() {
   const salvarEdicao = async (id: string) => {
     if (!nomeEditado.trim()) return;
     try {
-      const response = await axios.put(`http://localhost:3333/categories/${id}`, {
+      const response = await axios.put(`${API_URL}/categories/${id}`, {
         name: nomeEditado.trim(),
       });
       setCategorias(
@@ -93,12 +92,23 @@ function CategoryManager() {
   };
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-xl space-y-8 border border-gray-100 max-w-3xl mx-auto">
- 
-      <div className="flex flex-col sm:flex-row gap-4 items-center">
+    <div className="pt-1 pr-6 pb-6 pl-2 w-full max-w-3xl">
+      {/* Título */}
+      <div className="flex items-center gap-3 mb-1">
+        <Tag size={28} className="text-purple-700" />
+        <h2 className="text-2xl font-bold text-gray-800">Categorias</h2>
+      </div>
+
+      <p className="text-sm text-gray-600 mb-4 -mt-1">
+        Atualmente há{' '}
+        <span className="text-purple-700 font-semibold">{categorias.length} categorias</span> cadastradas no sistema.
+      </p>
+
+      {/* Campo de adicionar categoria */}
+      <div className="bg-white p-3 rounded-xl shadow-sm border border-purple-100 flex flex-col sm:flex-row gap-2 items-center mb-4">
         <input
           type="text"
-          className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
           placeholder="Nova categoria"
           value={novaCategoria}
           onChange={(e) => setNovaCategoria(e.target.value)}
@@ -117,89 +127,18 @@ function CategoryManager() {
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-100 shadow-sm">
-        {loading ? (
-          <div className="flex justify-center items-center h-40 text-gray-500">
-            <SpinnerGap className="animate-spin" size={28} />
-            <span className="ml-3 text-lg">Carregando categorias...</span>
-          </div>
-        ) : (
-          <table className="w-full text-sm text-gray-700 divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr className="text-left text-purple-700 uppercase text-xs font-semibold tracking-wide">
-                <th className="py-3 px-4">#</th>
-                <th className="py-3 px-4">Nome</th>
-                <th className="py-3 px-4">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-              {categorias.length > 0 ? (
-                categorias.map((cat, index) => (
-                  <tr key={cat.id} className="hover:bg-gray-50">
-                    <td className="py-3 px-4">{index + 1}</td>
-                    <td className="py-3 px-4">
-                      {editandoId === cat.id ? (
-                        <input
-                          className="border border-purple-300 px-2 py-1 rounded-md w-full text-sm"
-                          value={nomeEditado}
-                          onChange={(e) => setNomeEditado(e.target.value)}
-                        />
-                      ) : (
-                        <span className="font-medium text-gray-800">{cat.name}</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 flex gap-2">
-                      {editandoId === cat.id ? (
-                        <>
-                          <button
-                            onClick={() => salvarEdicao(cat.id)}
-                            className="text-green-600 hover:text-green-800"
-                            title="Salvar"
-                          >
-                            <Check size={20} />
-                          </button>
-                          <button
-                            onClick={cancelarEdicao}
-                            className="text-gray-500 hover:text-gray-700"
-                            title="Cancelar"
-                          >
-                            <X size={20} />
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => iniciarEdicao(cat.id, cat.name)}
-                            className="text-blue-600 hover:text-blue-800"
-                            title="Editar"
-                          >
-                            <PencilSimple size={20} />
-                          </button>
-                          <button
-                            onClick={() => removerCategoria(cat.id)}
-                            className="text-red-500 hover:text-red-700"
-                            title="Remover"
-                          >
-                            <Trash size={20} />
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={3} className="text-center py-6 text-gray-500 italic">
-                    Nenhuma categoria encontrada.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
+      {/* Tabela de categorias */}
+      <CategoryTable
+        categorias={categorias}
+        loading={loading}
+        editandoId={editandoId}
+        nomeEditado={nomeEditado}
+        setNomeEditado={setNomeEditado}
+        iniciarEdicao={iniciarEdicao}
+        cancelarEdicao={cancelarEdicao}
+        salvarEdicao={salvarEdicao}
+        removerCategoria={removerCategoria}
+      />
     </div>
   );
 }
-
-export default CategoryManager;
