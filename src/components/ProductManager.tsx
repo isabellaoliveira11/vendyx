@@ -66,6 +66,31 @@ function ProductManager() {
     setEditingProduct(null);
   };
 
+  // Função para deletar produto e atualizar lista local
+  const handleDelete = async (id: string) => {
+    const confirmDelete = window.confirm('Tem certeza que deseja excluir este produto? Esta ação é irreversível.');
+    if (!confirmDelete) return;
+
+    try {
+      await toast.promise(
+        axios.delete(`${API_URL}/products/${id}`),
+        {
+          loading: 'Excluindo produto...',
+          success: 'Produto excluído com sucesso!',
+          error: 'Erro ao excluir produto.',
+        }
+      );
+      setProducts(prev => prev.filter(prod => prod.id !== id));
+      // Se o produto que estava editando foi deletado, limpa o form
+      if (editingProduct?.id === id) {
+        setEditingProduct(null);
+      }
+    } catch (error) {
+      console.error('Erro ao excluir produto:', error);
+      toast.error('Erro ao excluir produto.');
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -97,8 +122,8 @@ function ProductManager() {
               <ProductTable
                 products={filteredProducts}
                 loading={loading}
-                onUpdate={fetchProductsAndCategories}
                 onEdit={handleEdit}
+                onDelete={handleDelete}  // <-- Passa aqui a função
               />
             </div>
 

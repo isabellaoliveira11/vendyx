@@ -1,9 +1,8 @@
-import { PencilSimple, Trash, WarningCircle, SpinnerGap } from 'phosphor-react';
+import { PencilSimple, Trash, SpinnerGap } from 'phosphor-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { API_URL } from '../config/api';
 
-// Interfaces (para tipagem dos dados)
 interface Category {
   id: string;
   name: string;
@@ -18,15 +17,14 @@ interface Product {
   category?: Category;
 }
 
-// Propriedades que o ProductTable vai receber do componente pai
 interface ProductTableProps {
   products: Product[];
   loading: boolean;
-  onUpdate: () => void; // Função para recarregar a lista no componente pai
-  onEdit: (product: Product) => void; // Função para editar um produto
+  onEdit: (product: Product) => void;
+  onDelete: (id: string) => void;
 }
 
-export default function ProductTable({ products, loading, onUpdate, onEdit }: ProductTableProps) {
+export default function ProductTable({ products, loading, onEdit, onDelete }: ProductTableProps) {
 
   const formatarMoeda = (valor: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -35,47 +33,26 @@ export default function ProductTable({ products, loading, onUpdate, onEdit }: Pr
     }).format(valor);
 
   const handleDelete = async (id: string) => {
-    // Usando toast.promise para um modal de confirmação
-    toast((t) => (
-      <div className="p-4 bg-white rounded-lg shadow-lg flex items-center gap-4">
-        <WarningCircle size={48} className="text-red-500" />
-        <div>
-          <p className="font-semibold text-gray-800">Confirmação de Exclusão</p>
-          <p className="text-gray-600 text-sm">Tem certeza que deseja excluir este produto? Esta ação é irreversível.</p>
-          <div className="mt-4 flex gap-2">
-            <button
-              onClick={async () => {
-                toast.dismiss(t.id);
-                try {
-                  await toast.promise(
-                    axios.delete(`${API_URL}/products/${id}`),
-                    {
-                      loading: 'Excluindo produto...',
-                      success: 'Produto excluído com sucesso!',
-                      error: 'Erro ao excluir produto. Tente novamente.'
-                    }
-                  );
-                  onUpdate(); // Recarrega a lista no componente pai
-                } catch (err) {
-                  console.error('Erro ao deletar produto:', err);
-                }
-              }}
-              className="bg-red-500 text-white px-3 py-1 rounded-md text-sm hover:bg-red-600 transition"
-            >
-              Excluir
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="bg-gray-200 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-300 transition"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      </div>
-    ), { duration: Infinity, position: 'top-center' });
+    if (!window.confirm('Tem certeza que deseja excluir este produto? Esta ação é irreversível.')) {
+      return;
+    }
+
+    try {
+      await toast.promise(
+        axios.delete(`${API_URL}/products/${id}`),
+        {
+          loading: 'Excluindo produto...',
+          success: 'Produto excluído com sucesso!',
+          error: 'Erro ao excluir produto.',
+        }
+      );
+      onDelete(id); // atualiza lista no componente pai
+    } catch (err) {
+      console.error('Erro ao deletar produto:', err);
+      toast.error('Erro ao excluir produto.');
+    }
   };
-  
+
   return (
     <div className="bg-white p-6 rounded-xl shadow-md border border-purple-100">
       <div className="overflow-x-auto">

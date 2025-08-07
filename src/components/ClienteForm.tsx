@@ -9,17 +9,17 @@ import {
 } from 'phosphor-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
-import type { Client } from '../types/client'; // ✅ tipo unificado
+import { API_URL } from '../config/api'; // ou use sua config
 
-const API_URL = 'http://localhost:3333';
+import type { Client } from '../types/client';
 
 interface ClientFormProps {
-  onClientAction: () => void;
   editingClient: Client | null;
+  onClientAction: () => void;
   onCancelEdit: () => void;
 }
 
-function ClientForm({ onClientAction, editingClient, onCancelEdit }: ClientFormProps) {
+function ClientForm({ editingClient, onClientAction, onCancelEdit }: ClientFormProps) {
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientPhone, setClientPhone] = useState('');
@@ -40,17 +40,18 @@ function ClientForm({ onClientAction, editingClient, onCancelEdit }: ClientFormP
     }
   }, [editingClient]);
 
-  const resetForm = () => {
+  function resetForm() {
     setClientName('');
     setClientEmail('');
     setClientPhone('');
     setClientAddress('');
     setNameError(null);
     setEmailError(null);
-  };
+  }
 
-  const validateForm = () => {
+  function validateForm() {
     let isValid = true;
+
     if (!clientName.trim()) {
       setNameError('Nome do cliente é obrigatório.');
       isValid = false;
@@ -69,13 +70,14 @@ function ClientForm({ onClientAction, editingClient, onCancelEdit }: ClientFormP
     }
 
     return isValid;
-  };
+  }
 
-  const handleSubmit = async () => {
+  async function handleSubmit() {
     if (!validateForm()) {
       toast.error('Preencha os campos obrigatórios corretamente.');
       return;
     }
+
     setIsLoading(true);
 
     const payload = {
@@ -92,7 +94,7 @@ function ClientForm({ onClientAction, editingClient, onCancelEdit }: ClientFormP
           {
             loading: 'Salvando alterações...',
             success: 'Cliente atualizado com sucesso!',
-            error: 'Erro ao atualizar cliente.'
+            error: 'Erro ao atualizar cliente.',
           }
         );
       } else {
@@ -101,19 +103,19 @@ function ClientForm({ onClientAction, editingClient, onCancelEdit }: ClientFormP
           {
             loading: 'Adicionando cliente...',
             success: 'Cliente adicionado com sucesso!',
-            error: 'Erro ao adicionar cliente.'
+            error: 'Erro ao adicionar cliente.',
           }
         );
       }
-
       onClientAction();
       onCancelEdit();
-    } catch (err) {
-      console.error('Erro ao salvar cliente:', err);
+    } catch (error) {
+      console.error('Erro ao salvar cliente:', error);
+      toast.error('Erro ao salvar cliente.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
     <>
@@ -121,6 +123,7 @@ function ClientForm({ onClientAction, editingClient, onCancelEdit }: ClientFormP
         {editingClient ? <PencilSimple size={20} weight="bold" /> : <PlusCircle size={20} weight="bold" />}
         {editingClient ? 'Editar Cliente' : 'Novo Cliente'}
       </h3>
+
       <div className="flex flex-col gap-4">
         {/* Nome */}
         <div>
@@ -132,8 +135,8 @@ function ClientForm({ onClientAction, editingClient, onCancelEdit }: ClientFormP
             <input
               id="clientName"
               type="text"
-              className={`pl-10 border rounded-md p-2 w-full ${nameError ? 'border-red-500' : 'border-gray-300'} focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors`}
               placeholder="Nome completo"
+              className={`pl-10 border rounded-md p-2 w-full ${nameError ? 'border-red-500' : 'border-gray-300'} focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors`}
               value={clientName}
               onChange={(e) => { setClientName(e.target.value); setNameError(null); }}
             />
@@ -151,8 +154,8 @@ function ClientForm({ onClientAction, editingClient, onCancelEdit }: ClientFormP
             <input
               id="clientEmail"
               type="email"
-              className={`pl-10 border rounded-md p-2 w-full ${emailError ? 'border-red-500' : 'border-gray-300'} focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors`}
               placeholder="exemplo@email.com"
+              className={`pl-10 border rounded-md p-2 w-full ${emailError ? 'border-red-500' : 'border-gray-300'} focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors`}
               value={clientEmail}
               onChange={(e) => { setClientEmail(e.target.value); setEmailError(null); }}
             />
@@ -170,8 +173,8 @@ function ClientForm({ onClientAction, editingClient, onCancelEdit }: ClientFormP
             <input
               id="clientPhone"
               type="text"
-              className="pl-10 border rounded-md p-2 w-full border-gray-300 focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors"
               placeholder="(XX) XXXXX-XXXX"
+              className="pl-10 border rounded-md p-2 w-full border-gray-300 focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors"
               value={clientPhone}
               onChange={(e) => setClientPhone(e.target.value)}
             />
@@ -188,24 +191,24 @@ function ClientForm({ onClientAction, editingClient, onCancelEdit }: ClientFormP
             <input
               id="clientAddress"
               type="text"
-              className="pl-10 border rounded-md p-2 w-full border-gray-300 focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors"
               placeholder="Rua, Número, Bairro"
+              className="pl-10 border rounded-md p-2 w-full border-gray-300 focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors"
               value={clientAddress}
               onChange={(e) => setClientAddress(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Botão */}
+        {/* Botões */}
         <button
           onClick={handleSubmit}
-          className="mt-2 bg-purple-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-purple-700 transition duration-300 ease-in-out flex items-center justify-center gap-2 text-sm font-semibold"
           disabled={isLoading}
+          className="mt-2 bg-purple-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-purple-700 transition duration-300 ease-in-out flex items-center justify-center gap-2 text-sm font-semibold"
         >
           {isLoading ? (
             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
           ) : editingClient ? (
             <>
@@ -221,8 +224,8 @@ function ClientForm({ onClientAction, editingClient, onCancelEdit }: ClientFormP
         {editingClient && (
           <button
             onClick={onCancelEdit}
-            className="mt-2 bg-gray-300 text-gray-800 px-5 py-2.5 rounded-lg shadow-md hover:bg-gray-400 transition duration-300 ease-in-out flex items-center justify-center gap-2 text-sm font-semibold"
             disabled={isLoading}
+            className="mt-2 bg-gray-300 text-gray-800 px-5 py-2.5 rounded-lg shadow-md hover:bg-gray-400 transition duration-300 ease-in-out flex items-center justify-center gap-2 text-sm font-semibold"
           >
             Cancelar Edição
           </button>
