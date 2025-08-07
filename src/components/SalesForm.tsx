@@ -16,13 +16,19 @@ interface CarrinhoItem {
   quantidade: number;
 }
 
+interface Client {
+  id: string;
+  name: string;
+}
+
 interface SaleFormProps {
   onVendaCriada: () => void;
+  clientes: Client[];
 }
 
 const formasPagamento = ["Pix", "Dinheiro", "Cartão"];
 
-export default function SaleForm({ onVendaCriada }: SaleFormProps) {
+export default function SaleForm({ onVendaCriada, clientes }: SaleFormProps) {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null);
   const [quantidade, setQuantidade] = useState<number>(1);
@@ -30,7 +36,7 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
   const [pagamento, setPagamento] = useState<string>(formasPagamento[0]);
   const [observacao, setObservacao] = useState('');
   const [descontoPercentual, setDescontoPercentual] = useState<number>(0);
-  const [cliente, setCliente] = useState('');
+  const [clienteSelecionado, setClienteSelecionado] = useState<Client | null>(null);
   const [clienteErro, setClienteErro] = useState<string | null>(null);
 
   useEffect(() => {
@@ -53,20 +59,20 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
     const quantidadeTotalDesejada = quantidadeNoCarrinho + quantidade;
 
     if (produtoSelecionado.stock < quantidadeTotalDesejada) {
-        toast.error(`Estoque insuficiente para "${produtoSelecionado.name}". Disponível: ${produtoSelecionado.stock}. Você já tem ${quantidadeNoCarrinho} no carrinho.`);
-        return;
+      toast.error(`Estoque insuficiente para "${produtoSelecionado.name}". Disponível: ${produtoSelecionado.stock}. Você já tem ${quantidadeNoCarrinho} no carrinho.`);
+      return;
     }
 
     if (itemExistente) {
-        setCarrinho(prev => prev.map(item =>
-            item.produto.id === produtoSelecionado.id
-                ? { ...item, quantidade: quantidadeTotalDesejada }
-                : item
-        ));
+      setCarrinho(prev => prev.map(item =>
+        item.produto.id === produtoSelecionado.id
+          ? { ...item, quantidade: quantidadeTotalDesejada }
+          : item
+      ));
     } else {
-        setCarrinho(prev => [...prev, { produto: produtoSelecionado, quantidade }]);
+      setCarrinho(prev => [...prev, { produto: produtoSelecionado, quantidade }]);
     }
-    
+
     setQuantidade(1);
     setProdutoSelecionado(null);
     toast.success('Item adicionado ao carrinho!');
@@ -80,7 +86,7 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
   };
 
   const resetForm = () => {
-    setCliente('');
+    setClienteSelecionado(null);
     setCarrinho([]);
     setObservacao('');
     setPagamento(formasPagamento[0]);
@@ -93,8 +99,8 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
   const finalizarVenda = async () => {
     let hasError = false;
 
-    if (!cliente.trim()) {
-      setClienteErro('O nome do cliente é obrigatório.');
+    if (!clienteSelecionado) {
+      setClienteErro('O cliente é obrigatório.');
       hasError = true;
     } else {
       setClienteErro(null);
@@ -105,16 +111,14 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
       hasError = true;
     }
 
-    if (hasError) {
-      return;
-    }
+    if (hasError) return;
 
+    const total = carrinho.reduce((acc, item) => acc + item.produto.price * item.quantidade, 0);
     const valorDescontoCalculado = total * (descontoPercentual / 100);
     const descontoFinalParaBackend = Math.min(Math.max(0, valorDescontoCalculado), total);
 
-
     const payload = {
-      clientName: cliente,
+      clientName: clienteSelecionado!.name,
       items: carrinho.map(item => ({
         productId: item.produto.id,
         quantity: item.quantidade,
@@ -125,6 +129,8 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
       observation: observacao
     };
 
+    console.log('Payload enviado:', JSON.stringify(payload, null, 2)); // <-- Log para debugar
+
     try {
       await toast.promise(
         axios.post('http://localhost:3333/sales', payload),
@@ -132,7 +138,7 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
           loading: 'Finalizando venda...',
           success: 'Venda finalizada com sucesso!',
           error: (err) => {
-            const backendErrorMsg = err.response?.data?.error || 'Erro desconhecido ao finalizar venda.';
+            const backendErrorMsg = err.response?.data?.error || JSON.stringify(err.response?.data) || 'Erro desconhecido ao finalizar venda.';
             console.error('Erro ao finalizar venda:', err);
             return backendErrorMsg;
           },
@@ -158,28 +164,57 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
 
       {/* Cliente */}
       <div className="mb-4">
-        <label htmlFor="cliente-nome" className="block text-sm font-medium text-gray-700 mb-1">
-          Nome do Cliente <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Cliente <span className="text-red-500">*</span>
         </label>
-        <input
-          id="cliente-nome"
-          type="text"
-          value={cliente}
-          onChange={(e) => {
-            setCliente(e.target.value);
-            if (e.target.value.trim()) setClienteErro(null);
-          }}
-          className={`border rounded-md p-2 w-full transition-colors ${clienteErro ? 'border-red-500 ring-red-200 ring-2' : 'border-gray-300 focus:border-purple-500 focus:ring-purple-200 focus:ring-2'}`}
-          placeholder="Nome do cliente"
-        />
+        <Listbox value={clienteSelecionado} onChange={setClienteSelecionado}>
+          <div className="relative">
+            <Listbox.Button className="relative w-full cursor-pointer rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 sm:text-sm">
+              <span className="block truncate">
+                {clienteSelecionado ? clienteSelecionado.name : 'Selecione um cliente'}
+              </span>
+              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                <CaretDown size={16} className="text-gray-400" aria-hidden="true" />
+              </span>
+            </Listbox.Button>
+            <Transition
+              as={Fragment}
+              leave="transition ease-in duration-100"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                {clientes.map((cliente) => (
+                  <Listbox.Option
+                    key={cliente.id}
+                    className={({ active }) =>
+                      `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? 'bg-purple-100 text-purple-900' : 'text-gray-900'}`
+                    }
+                    value={cliente}
+                  >
+                    {({ selected }) => (
+                      <>
+                        <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>
+                          {cliente.name}
+                        </span>
+                        {selected ? (
+                          <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-purple-600">
+                            <Check size={16} aria-hidden="true" />
+                          </span>
+                        ) : null}
+                      </>
+                    )}
+                  </Listbox.Option>
+                ))}
+              </Listbox.Options>
+            </Transition>
+          </div>
+        </Listbox>
         {clienteErro && <p className="text-red-500 text-sm mt-1">{clienteErro}</p>}
       </div>
 
-      <hr className="my-6 border-purple-100" />
-
       {/* Produto + Quantidade + Adicionar */}
       <div className="flex flex-col md:flex-row gap-4 items-end mb-6">
-        {/* Produto */}
         <div className="flex-1 w-full md:w-auto">
           <label className="block text-sm font-medium text-gray-700 mb-1">Produto</label>
           <Listbox value={produtoSelecionado} onChange={setProdutoSelecionado}>
@@ -209,9 +244,7 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
                     >
                       {({ selected }) => (
                         <>
-                          <span
-                            className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}
-                          >
+                          <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>
                             {produto.name} (R$ {produto.price.toFixed(2)}) - Estoque: {produto.stock}
                           </span>
                           {selected ? (
@@ -229,7 +262,6 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
           </Listbox>
         </div>
 
-        {/* Quantidade */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
           <input
@@ -241,10 +273,9 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
           />
         </div>
 
-        {/* BOTÃO ADICIONAR ITEM - Tamanho ajustado */}
         <button
           onClick={adicionarAoCarrinho}
-          className="bg-purple-600 text-white px-3 py-2 rounded-md hover:bg-purple-700 transition duration-200 ease-in-out self-end flex items-center justify-center gap-1 text-sm font-semibold h-[42px] min-w-[100px]" // Ajustes: h-[42px] para alinhar com input, min-w para largura mínima
+          className="bg-purple-600 text-white px-3 py-2 rounded-md hover:bg-purple-700 transition duration-200 ease-in-out self-end flex items-center justify-center gap-1 text-sm font-semibold h-[42px] min-w-[100px]"
         >
           + Adicionar
         </button>
@@ -296,9 +327,8 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
       <hr className="my-6 border-purple-100" />
 
       {/* Resumo e Observações */}
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-end flex-wrap"> {/* Adicionado flex-wrap para melhor responsividade */}
-        {/* Pagamento - Largura controlada com w-48 */}
-        <div className="flex flex-col flex-shrink-0 w-48"> {/* w-48 para largura fixa, flex-shrink-0 para não espremer */}
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-end flex-wrap">
+        <div className="flex flex-col flex-shrink-0 w-48">
           <label className="block text-sm font-medium text-gray-700 mb-1">Forma de pagamento</label>
           <Listbox value={pagamento} onChange={setPagamento}>
             <div className="relative w-full">
@@ -325,9 +355,7 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
                     >
                       {({ selected }) => (
                         <>
-                          <span
-                            className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}
-                          >
+                          <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>
                             {f}
                           </span>
                           {selected ? (
@@ -345,13 +373,12 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
           </Listbox>
         </div>
 
-        {/* Desconto em Porcentagem */}
-        <div className="flex flex-col flex-shrink-0 w-32"> {/* Largura fixa para o desconto */}
+        <div className="flex flex-col flex-shrink-0 w-32">
           <label className="block text-sm font-medium text-gray-700 mb-1">Desconto (%)</label>
           <div className="relative">
             <input
               type="number"
-              className="border border-gray-300 rounded-md p-2 w-full text-center focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors" // w-full dentro da div de largura fixa
+              className="border border-gray-300 rounded-md p-2 w-full text-center focus:border-purple-500 focus:ring-purple-200 focus:ring-2 transition-colors"
               value={descontoPercentual}
               onChange={(e) => setDescontoPercentual(Number(e.target.value))}
               min={0}
@@ -364,14 +391,12 @@ export default function SaleForm({ onVendaCriada }: SaleFormProps) {
           </div>
         </div>
 
-        {/* Total */}
         <div className="ml-auto text-right flex-shrink-0 mt-4 md:mt-0">
           <p className="text-sm text-gray-600">Subtotal: <span className="font-medium">R$ {total.toFixed(2)}</span></p>
           <p className="text-lg font-bold text-purple-800">Valor Final: <span className="text-green-600">R$ {finalPriceDisplayed.toFixed(2)}</span></p>
         </div>
       </div>
 
-      {/* Botão Finalizar */}
       <button
         onClick={finalizarVenda}
         className="mt-6 w-full bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition duration-200 ease-in-out flex items-center justify-center gap-2 text-lg font-semibold"
