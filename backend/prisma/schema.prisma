@@ -30,16 +30,19 @@ model Product {
 
 model Sale {
   id            String    @id @default(uuid())
-  clientName    String
   total         Float
-  itemsCount    Int       
-   paymentMethod String    
-  discount      Float     
-  observation   String?  
+  itemsCount    Int
+  paymentMethod String?
+  discount      Float?
+  observation   String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   items         SaleItem[]
+  
+  clientId      String?    // ID do cliente que fez a compra
+  client        Client?    @relation(fields: [clientId], references: [id])
 }
+
 
 model SaleItem {
   id        String   @id @default(uuid())
@@ -56,11 +59,12 @@ model Client {
   id        String   @id @default(uuid())
   name      String
   email     String   @unique
-  phone     String? // O '?' torna o campo opcional
+  phone     String?
   address   String?
-  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  sales     Sale[] // Lista de vendas feitas por este cliente
 
   @@map("clients")
 }
