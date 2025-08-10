@@ -152,3 +152,58 @@ export const getSaleById = async (request: FastifyRequest, reply: FastifyReply) 
     return reply.status(500).send({ error: 'Erro ao buscar venda.' });
   }
 };
+
+export const getSalesReport = async (request: FastifyRequest, reply: FastifyReply) => {
+  // Tipamos os parâmetros que podem vir da URL
+  const { startDate, endDate, paymentMethod } = request.query as { 
+    startDate?: string; 
+    endDate?: string; 
+    paymentMethod?: string; 
+  };
+
+  try {
+    const whereClause: any = {};
+
+    // Adiciona o filtro de data inicial, se existir
+    if (startDate) {
+      whereClause.createdAt = { ...whereClause.createdAt, gte: new Date(startDate) };
+    }
+
+    // Adiciona o filtro de data final, se existir
+    if (endDate) {
+      const endOfDay = new Date(endDate);
+      endOfDay.setDate(endOfDay.getDate() + 1); // Pega até o fim do dia
+      whereClause.createdAt = { ...whereClause.createdAt, lt: endOfDay };
+    }
+
+    // Adiciona o filtro de método de pagamento, se existir e não for vazio
+    if (paymentMethod && paymentMethod !== '') {
+      whereClause.paymentMethod = paymentMethod;
+    }
+
+    const sales = await prisma.sale.findMany({
+      where: whereClause,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    
+    // Formatamos a resposta para manter o padrão do seu outro método `getSales`
+    const formatted = sales.map((sale) => ({
+      id: sale.id,
+      clientName: sale.clientName,
+      total: sale.total,
+      createdAt: sale.createdAt,
+      itemsCount: sale.itemsCount,
+      paymentMethod: sale.paymentMethod,
+      discount: sale.discount,
+      observation: sale.observation,
+    }));
+
+    return reply.send(formatted);
+
+  } catch (error) {
+    console.error("Erro ao gerar relatório de vendas:", error);
+    return reply.status(500).send({ error: 'Erro interno do servidor ao gerar relatório.' });
+  }
+};
