@@ -13,7 +13,8 @@ import Categorias from './pages/categorias';
 import Clientes from './pages/Clientes';
 import ProductManager from './components/ProductManager';
 import Financial from './pages/Financial';
-import Users from './pages/Users'; // 1. Importe a nova página aqui
+import Users from './pages/Users';
+import About from './pages/About'; // 1. Importe a nova página aqui
 
 function App() {
   return (
@@ -34,8 +35,9 @@ function App() {
             <Route path="/vendas" element={<Sales />} />
             <Route path="/relatorios" element={<Reports />} />
             <Route path="/financeiro" element={<Financial />} />
-            {/* 2. Adicione a nova rota aqui */}
             <Route path="/usuarios" element={<Users />} />
+            {/* 2. Adicione a nova rota aqui */}
+            <Route path="/sobre" element={<About />} />
           </Route>
         </Routes>
       </BrowserRouter>
