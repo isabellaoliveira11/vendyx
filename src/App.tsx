@@ -1,7 +1,7 @@
-// src/App.tsx - VERSÃO FINAL E CORRETA
+// src/App.tsx
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import MainLayout from './layout/MainLayout'; // Importe o novo layout
+import MainLayout from './layout/MainLayout';
 
 // Importe TODAS as suas páginas
 import Home from './pages/Home';
@@ -12,7 +12,8 @@ import Reports from './pages/Reports';
 import Categorias from './pages/categorias';
 import Clientes from './pages/Clientes';
 import ProductManager from './components/ProductManager';
-import Financial from './pages/Financial'; // 1. Importe a nova página aqui
+import Financial from './pages/Financial';
+import Users from './pages/Users'; // 1. Importe a nova página aqui
 
 function App() {
   return (
@@ -32,12 +33,12 @@ function App() {
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/vendas" element={<Sales />} />
             <Route path="/relatorios" element={<Reports />} />
-            {/* 2. Adicione a nova rota aqui */}
             <Route path="/financeiro" element={<Financial />} />
+            {/* 2. Adicione a nova rota aqui */}
+            <Route path="/usuarios" element={<Users />} />
           </Route>
         </Routes>
       </BrowserRouter>
-      {/* O Toaster pode ficar aqui, se você tiver um */}
     </>
   );
 }
