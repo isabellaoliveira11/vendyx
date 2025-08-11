@@ -118,7 +118,9 @@ export default function SaleForm({ onVendaCriada, clientes }: SaleFormProps) {
     const descontoFinalParaBackend = Math.min(Math.max(0, valorDescontoCalculado), total);
 
     const payload = {
-      clientName: clienteSelecionado!.name,
+      // ✅ AQUI ESTÁ A CORREÇÃO!
+      // Enviamos o ID do cliente, e não mais o nome.
+      clientId: clienteSelecionado!.id,
       items: carrinho.map(item => ({
         productId: item.produto.id,
         quantity: item.quantidade,
@@ -128,8 +130,6 @@ export default function SaleForm({ onVendaCriada, clientes }: SaleFormProps) {
       discount: descontoFinalParaBackend,
       observation: observacao
     };
-
-    console.log('Payload enviado:', JSON.stringify(payload, null, 2)); // <-- Log para debugar
 
     try {
       await toast.promise(
@@ -213,6 +213,7 @@ export default function SaleForm({ onVendaCriada, clientes }: SaleFormProps) {
         {clienteErro && <p className="text-red-500 text-sm mt-1">{clienteErro}</p>}
       </div>
 
+      {/* O resto do seu formulário continua aqui... */}
       {/* Produto + Quantidade + Adicionar */}
       <div className="flex flex-col md:flex-row gap-4 items-end mb-6">
         <div className="flex-1 w-full md:w-auto">
