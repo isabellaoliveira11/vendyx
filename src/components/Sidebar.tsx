@@ -10,7 +10,8 @@ import {
   FaSync,
   FaChevronDown,
   FaChevronUp,
-  FaUserTag, // Ícone específico para Clientes
+  FaUserTag,
+  FaDollarSign, // 1. Ícone adicionado
 } from 'react-icons/fa';
 
 function Sidebar() {
@@ -21,11 +22,12 @@ function Sidebar() {
 
   const toggleProductsMenu = () => setIsProductsOpen((prev) => !prev);
 
-  // Lista de itens JÁ ORGANIZADA e sem o 'Home' (que será colocado manualmente)
+  // 2. Novo item "Financeiro" adicionado à lista
   const navItems = [
     { to: '/vendas', icon: <FaShoppingCart />, label: 'Vendas' },
     { to: '/clientes', icon: <FaUserTag />, label: 'Clientes' },
     { to: '/relatorios', icon: <FaChartBar />, label: 'Relatórios' },
+    { to: '/financeiro', icon: <FaDollarSign />, label: 'Financeiro' },
     { to: '/usuarios', icon: <FaUsers />, label: 'Usuários' },
     { to: '/sobre', icon: <FaInfoCircle />, label: 'Sobre' },
   ];
@@ -39,7 +41,7 @@ function Sidebar() {
         </div>
 
         <nav className="flex flex-col gap-3 mt-10 px-4">
-          {/* 1. Item Home (colocado manualmente no topo) */}
+          {/* Item Home */}
           <Link
             to="/home"
             className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 ${
@@ -51,7 +53,7 @@ function Sidebar() {
             <FaHome /> Home
           </Link>
 
-          {/* 2. Item com submenu (Produtos) */}
+          {/* Item com submenu (Produtos) */}
           <div>
             <button
               onClick={toggleProductsMenu}
@@ -90,7 +92,7 @@ function Sidebar() {
             )}
           </div>
 
-          {/* 3. Resto dos itens mapeados da lista */}
+          {/* Resto dos itens mapeados da lista */}
           {navItems.map((item) => (
             <Link
               key={item.to}

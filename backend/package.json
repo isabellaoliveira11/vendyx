@@ -21,8 +21,10 @@
     "tsx": "^4.20.3"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
     "@types/node": "^24.0.10",
     "prisma": "^6.11.1",
+    "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3"
   }
