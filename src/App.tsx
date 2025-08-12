@@ -1,33 +1,72 @@
-// src/App.tsx
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Suspense, lazy } from "react";
+import MainLayout from "./layout/MainLayout";
 
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import MainLayout from './layout/MainLayout';
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const token = localStorage.getItem("token");
+  const isGuest = localStorage.getItem("guestMode") === "true"; // Nova verificação para o modo convidado
 
-// Importe TODAS as suas páginas
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Sales from './pages/Sales';
-import Reports from './pages/Reports';
-import Categorias from './pages/categorias';
-import Clientes from './pages/Clientes';
-import ProductManager from './components/ProductManager';
-import Financial from './pages/Financial';
-import Users from './pages/Users';
-import About from './pages/About'; // 1. Importe a nova página aqui
+  // Agora, o usuário é redirecionado para o login SOMENTE se não houver token E não for convidado.
+  if (!token && !isGuest) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+}
 
-function App() {
+function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
+  const token = localStorage.getItem("token");
+  if (token) return <Navigate to="/home" replace />;
+  return <>{children}</>;
+}
+
+function ScrollToTop() {
+  window.scrollTo(0, 0);
+  return null;
+}
+
+const Home = lazy(() => import("./pages/Home"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Sales = lazy(() => import("./pages/Sales"));
+const Reports = lazy(() => import("./pages/Reports"));
+const Categorias = lazy(() => import("./pages/Categorias"));
+const Clientes = lazy(() => import("./pages/Clientes"));
+const ProductManager = lazy(() => import("./components/ProductManager"));
+const Financial = lazy(() => import("./pages/Financial"));
+const Users = lazy(() => import("./pages/Users"));
+const About = lazy(() => import("./pages/About"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+export default function App() {
   return (
-    <>
-      <BrowserRouter>
+    <BrowserRouter>
+      <ScrollToTop />
+      <Suspense fallback={<div className="p-6 text-center">Carregando…</div>}>
         <Routes>
-          {/* Rota 1: Rotas Públicas (sem sidebar) */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          {/* Rota 2: Rotas Privadas (que usam o MainLayout) */}
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Navigate to="/home" />} />
+          <Route
+            path="/login"
+            element={
+              <PublicOnlyRoute>
+                <Login />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicOnlyRoute>
+                <Register />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<Home />} />
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/produtos" element={<ProductManager />} />
@@ -36,13 +75,11 @@ function App() {
             <Route path="/relatorios" element={<Reports />} />
             <Route path="/financeiro" element={<Financial />} />
             <Route path="/usuarios" element={<Users />} />
-            {/* 2. Adicione a nova rota aqui */}
             <Route path="/sobre" element={<About />} />
           </Route>
+          <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
-    </>
+      </Suspense>
+    </BrowserRouter>
   );
 }
-
-export default App;
