@@ -20,64 +20,106 @@ function CategoryForm({
   onCancelEdit
 }: CategoryFormProps) {
   const [novaCategoria, setNovaCategoria] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (editingCategoria) {
       setNovaCategoria(editingCategoria.name);
+      setError(null);
     } else {
       setNovaCategoria('');
+      setError(null);
     }
   }, [editingCategoria]);
 
-  const handleSubmit = async () => {
-    if (!novaCategoria.trim()) return;
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const value = novaCategoria.trim();
 
-    await onAdd(novaCategoria);
-    setNovaCategoria('');
+    if (!value) {
+      setError('Informe um nome para a categoria.');
+      return;
+    }
+    if (value.length < 2) {
+      setError('O nome deve ter pelo menos 2 caracteres.');
+      return;
+    }
+
+    setError(null);
+    await onAdd(value);
+    // se não estiver editando, limpa após adicionar
+    if (!editingCategoria) setNovaCategoria('');
   };
 
   return (
-    <div className="space-y-4">
-      <label className="text-sm font-medium text-gray-700 block">
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <label htmlFor="categoriaNome" className="text-sm font-medium text-gray-700 block">
         Nome da categoria
       </label>
-      <input
-        type="text"
-        value={novaCategoria}
-        onChange={(e) => setNovaCategoria(e.target.value)}
-        className="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
-        placeholder="Nome da categoria"
-      />
 
-      <div className="flex items-center gap-2">
-        <button
-          onClick={handleSubmit}
+      <div>
+        <input
+          id="categoriaNome"
+          type="text"
+          value={novaCategoria}
+          onChange={(e) => { setNovaCategoria(e.target.value); if (error) setError(null); }}
+          className={`w-full border rounded px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500 ${
+            error ? 'border-red-500' : 'border-gray-300'
+          }`}
+          placeholder="Ex.: Acessórios"
+          autoComplete="off"
+          inputMode="text"
+          maxLength={60}
+          aria-invalid={!!error}
+          aria-describedby={error ? 'categoria-erro' : undefined}
           disabled={isAdding}
-          className="w-full bg-purple-500 hover:bg-purple-600 text-white flex items-center justify-center gap-2 px-4 py-2 rounded transition"
+        />
+        {error && (
+          <p id="categoria-erro" className="text-red-500 text-xs mt-1">
+            {error}
+          </p>
+        )}
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <button
+          type="submit"
+          disabled={isAdding}
+          className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition"
+          aria-label={editingCategoria ? 'Salvar alterações' : 'Adicionar categoria'}
         >
-          {editingCategoria ? (
+          {isAdding ? (
+            <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24" aria-hidden="true">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0a12 12 0 00-12 12h4z"/>
+            </svg>
+          ) : editingCategoria ? (
             <>
               <Check size={18} weight="bold" />
-              {isAdding ? 'Salvando...' : 'Salvar Alterações'}
+              Salvar Alterações
             </>
           ) : (
             <>
               <Plus size={18} weight="bold" />
-              {isAdding ? 'Adicionando...' : 'Adicionar Categoria'}
+              Adicionar Categoria
             </>
           )}
         </button>
 
         {editingCategoria && onCancelEdit && (
           <button
+            type="button"
             onClick={onCancelEdit}
-            className="text-sm text-gray-500 underline"
+            disabled={isAdding}
+            className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-800 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition disabled:opacity-60"
+            aria-label="Cancelar edição"
           >
-            <X size={16} /> Cancelar
+            <X size={16} />
+            Cancelar
           </button>
         )}
       </div>
-    </div>
+    </form>
   );
 }
 

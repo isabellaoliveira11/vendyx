@@ -1,38 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
+
+const STORAGE_KEY = "sidebar:collapsed";
 
 export default function MainLayout() {
-  const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, String(collapsed));
+  }, [collapsed]);
 
   return (
-    <div className="flex bg-gray-50 min-h-screen">
-      {/* Sidebar (desktop) */}
-      <aside className="hidden lg:block w-60 shrink-0">
-        <Sidebar />
-      </aside>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Desktop: controla; Mobile: sempre colapsada e sem botão */}
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(v => !v)} />
 
-      {/* Sidebar (mobile - drawer) */}
-      {open && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setOpen(false)}
-          />
-          <aside className="absolute left-0 top-0 h-full w-60 bg-white shadow-xl">
-            <Sidebar onLinkClick={() => setOpen(false)} />
-          </aside>
-        </div>
-      )}
-
-      {/* Conteúdo */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <Navbar onMenuClick={() => setOpen(true)} userName="Isabela Oliveira" />
-        <main className="flex-1 p-4 lg:p-6">
+      <main className="flex-1 min-w-0">
+        <div className="mx-auto w-full max-w-[1280px] p-4 sm:p-6 lg:p-8">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

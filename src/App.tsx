@@ -4,12 +4,8 @@ import MainLayout from "./layout/MainLayout";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem("token");
-  const isGuest = localStorage.getItem("guestMode") === "true"; // Nova verificação para o modo convidado
-
-  // Agora, o usuário é redirecionado para o login SOMENTE se não houver token E não for convidado.
-  if (!token && !isGuest) {
-    return <Navigate to="/login" replace />;
-  }
+  const isGuest = localStorage.getItem("guestMode") === "true";
+  if (!token && !isGuest) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
@@ -29,9 +25,9 @@ const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const Sales = lazy(() => import("./pages/Sales"));
 const Reports = lazy(() => import("./pages/Reports"));
-const Categorias = lazy(() => import("./pages/Categorias"));
+const Categorias = lazy(() => import("./components/CategoryManager")); // <- AQUI
 const Clientes = lazy(() => import("./pages/Clientes"));
-const ProductManager = lazy(() => import("./components/ProductManager"));
+const ProductManager = lazy(() => import("./components/ProductManager")); // ok se sua página está em components
 const Financial = lazy(() => import("./pages/Financial"));
 const Users = lazy(() => import("./pages/Users"));
 const About = lazy(() => import("./pages/About"));

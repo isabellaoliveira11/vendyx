@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import {
-  Plus,
-  SpinnerGap,
-  Tag,
-} from 'phosphor-react';
+import { Plus, SpinnerGap, Tag } from 'phosphor-react';
 import CategoryTable from '../components/CategoryTable';
 import { API_URL } from '../config/api';
 
@@ -39,13 +35,13 @@ export default function CategoryManager() {
   }, []);
 
   const adicionarCategoria = async () => {
-    if (!novaCategoria.trim()) return;
+    const nome = novaCategoria.trim();
+    if (!nome) return;
+
     setIsAdding(true);
     try {
-      const response = await axios.post(`${API_URL}/categories`, {
-        name: novaCategoria.trim(),
-      });
-      setCategorias([...categorias, response.data]);
+      const response = await axios.post(`${API_URL}/categories`, { name: nome });
+      setCategorias((prev) => [...prev, response.data]);
       setNovaCategoria('');
     } catch (err: any) {
       alert(err.response?.data?.error || 'Erro ao adicionar categoria');
@@ -58,8 +54,8 @@ export default function CategoryManager() {
     if (!window.confirm('Tem certeza que deseja remover esta categoria?')) return;
     try {
       await axios.delete(`${API_URL}/categories/${id}`);
-      setCategorias(categorias.filter((c) => c.id !== id));
-    } catch (err) {
+      setCategorias((prev) => prev.filter((c) => c.id !== id));
+    } catch {
       alert('Erro ao remover categoria');
     }
   };
@@ -67,6 +63,8 @@ export default function CategoryManager() {
   const iniciarEdicao = (id: string, nomeAtual: string) => {
     setEditandoId(id);
     setNomeEditado(nomeAtual);
+    // rola suavemente até o topo para ficar perto do card de adicionar (opcional)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const cancelarEdicao = () => {
@@ -75,15 +73,13 @@ export default function CategoryManager() {
   };
 
   const salvarEdicao = async (id: string) => {
-    if (!nomeEditado.trim()) return;
+    const nome = nomeEditado.trim();
+    if (!nome) return;
+
     try {
-      const response = await axios.put(`${API_URL}/categories/${id}`, {
-        name: nomeEditado.trim(),
-      });
-      setCategorias(
-        categorias.map((cat) =>
-          cat.id === id ? { ...cat, name: response.data.name } : cat
-        )
+      const response = await axios.put(`${API_URL}/categories/${id}`, { name: nome });
+      setCategorias((prev) =>
+        prev.map((cat) => (cat.id === id ? { ...cat, name: response.data.name } : cat))
       );
       cancelarEdicao();
     } catch (err: any) {
@@ -92,7 +88,7 @@ export default function CategoryManager() {
   };
 
   return (
-    <div className="pt-1 pr-6 pb-6 pl-2 w-full max-w-3xl">
+    <div className="p-4 lg:p-6 w-full max-w-2xl">
       {/* Título */}
       <div className="flex items-center gap-3 mb-1">
         <Tag size={28} className="text-purple-700" />
@@ -104,30 +100,50 @@ export default function CategoryManager() {
         <span className="text-purple-700 font-semibold">{categorias.length} categorias</span> cadastradas no sistema.
       </p>
 
-      {/* Campo de adicionar categoria */}
-      <div className="bg-white p-3 rounded-xl shadow-sm border border-purple-100 flex flex-col sm:flex-row gap-2 items-center mb-4">
+      {/* Card: adicionar/editar */}
+      <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-purple-100 flex flex-col sm:flex-row gap-2 items-center mb-5">
         <input
           type="text"
           className="flex-1 border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
-          placeholder="Nova categoria"
-          value={novaCategoria}
-          onChange={(e) => setNovaCategoria(e.target.value)}
+          placeholder={editandoId ? 'Editar nome da categoria' : 'Nova categoria'}
+          value={editandoId ? nomeEditado : novaCategoria}
+          onChange={(e) => (editandoId ? setNomeEditado(e.target.value) : setNovaCategoria(e.target.value))}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              editandoId ? salvarEdicao(editandoId) : adicionarCategoria();
+            }
+          }}
         />
-        <button
-          onClick={adicionarCategoria}
-          disabled={isAdding || !novaCategoria.trim()}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
-        >
-          {isAdding ? (
-            <SpinnerGap className="animate-spin" size={20} />
-          ) : (
-            <Plus size={20} />
-          )}
-          {isAdding ? 'Adicionando...' : 'Adicionar'}
-        </button>
+
+        {editandoId ? (
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => salvarEdicao(editandoId)}
+              disabled={!nomeEditado.trim()}
+              className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg font-medium disabled:opacity-50 transition"
+            >
+              Salvar alterações
+            </button>
+            <button
+              onClick={cancelarEdicao}
+              className="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 text-gray-800 px-5 py-2.5 rounded-lg font-medium transition"
+            >
+              Cancelar
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={adicionarCategoria}
+            disabled={isAdding || !novaCategoria.trim()}
+            className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            {isAdding ? <SpinnerGap className="animate-spin" size={20} /> : <Plus size={20} />}
+            {isAdding ? 'Adicionando...' : 'Adicionar Categoria'}
+          </button>
+        )}
       </div>
 
-      {/* Tabela de categorias */}
+      {/* Tabela */}
       <CategoryTable
         categorias={categorias}
         loading={loading}

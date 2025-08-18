@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { User, MagnifyingGlass } from 'phosphor-react';
+import { User, MagnifyingGlass, X } from 'phosphor-react';
 import toast from 'react-hot-toast';
 
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
+import { API_URL } from '../config/api';
 import ClientForm from '../components/ClienteForm';
 import ClienteTable from '../components/ClienteTable';
-
-const API_URL = 'http://localhost:3333';
 
 interface Client {
   id: string;
@@ -18,46 +15,36 @@ interface Client {
   address?: string;
 }
 
-function ClienteManager() {
+export default function Clientes() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
-  // Busca clientes da API
-  const fetchClients = async () => {
+  async function fetchClients() {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/clients`);
       setClients(res.data);
     } catch (error) {
-      toast.error('Erro ao carregar clientes.');
       console.error(error);
+      toast.error('Erro ao carregar clientes.');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   useEffect(() => {
     fetchClients();
   }, []);
 
-  // Filtra clientes pelo nome
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredClients = clients.filter((c) =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Seleciona cliente para editar
-  const handleEdit = (client: Client) => {
-    setEditingClient(client);
-  };
+  const handleEdit = (client: Client) => setEditingClient(client);
+  const handleCancelEdit = () => setEditingClient(null);
 
-  // Cancela edição
-  const handleCancelEdit = () => {
-    setEditingClient(null);
-  };
-
-  // Excluir cliente e atualizar lista localmente
   const handleDelete = async (id: string) => {
     try {
       await toast.promise(
@@ -68,8 +55,8 @@ function ClienteManager() {
           error: 'Erro ao remover cliente.',
         }
       );
-      // Atualiza a lista local removendo o cliente deletado
-      setClients(prevClients => prevClients.filter(client => client.id !== id));
+      setClients((prev) => prev.filter((c) => c.id !== id));
+      if (editingClient?.id === id) setEditingClient(null);
     } catch (error) {
       console.error(error);
       toast.error('Erro ao remover cliente.');
@@ -77,56 +64,64 @@ function ClienteManager() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="flex min-h-screen bg-gray-50">
-        <Sidebar />
-
-        <main className="flex-1 p-6">
-          <div className="flex items-center gap-3 mb-1">
-            <User size={32} className="text-purple-700" weight="duotone" />
-            <h2 className="text-2xl font-bold text-gray-800">Clientes</h2>
-          </div>
-
-          <p className="text-sm text-gray-600 mb-6 -mt-1">
-            Atualmente há <span className="text-purple-700 font-semibold">{clients.length} clientes</span> cadastrados.
-          </p>
-
-          <div className="grid lg:grid-cols-3 gap-6">
-            <div className="col-span-2">
-              <div className="bg-white p-4 rounded-xl shadow-md border border-purple-100 flex items-center gap-2 mb-4">
-                <MagnifyingGlass size={20} className="text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Pesquisar cliente por nome..."
-                  className="flex-1 p-1 outline-none focus:ring-0 border-none"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              <ClienteTable
-                clientes={filteredClients}
-                loading={loading}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            </div>
-
-            <div className="col-span-1">
-              <div className="bg-white p-6 rounded-xl shadow-md border border-purple-100">
-                <ClientForm
-                  editingClient={editingClient}
-                  onClientAction={fetchClients}
-                  onCancelEdit={handleCancelEdit}
-                />
-              </div>
-            </div>
-          </div>
-        </main>
+    <div className="p-4 sm:p-6">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-1">
+        <User size={32} className="text-purple-700" weight="duotone" />
+        <h2 className="text-2xl font-bold text-gray-800">Clientes</h2>
       </div>
-    </>
+      <p className="text-sm text-gray-600 mb-6 -mt-1">
+        Atualmente há{' '}
+        <span className="text-purple-700 font-semibold">{clients.length} clientes</span> cadastrados.
+      </p>
+
+      {/* Grid principal responsivo */}
+      <div className="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-6">
+        {/* Lista + busca */}
+        <section className="lg:col-span-2 w-full">
+          {/* Busca */}
+          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md border border-purple-100 flex items-center gap-2 mb-4">
+            <MagnifyingGlass size={20} className="text-gray-400" />
+            <input
+              type="text"
+              placeholder="Pesquisar cliente por nome..."
+              className="flex-1 py-1 outline-none border-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="text-gray-400 hover:text-gray-600 transition"
+                aria-label="Limpar busca"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
+
+          {/* Lista de clientes sem forçar rolagem lateral */}
+          <div className="overflow-x-auto lg:overflow-visible">
+            <ClienteTable
+              clientes={filteredClients}
+              loading={loading}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          </div>
+        </section>
+
+        {/* Formulário de cliente */}
+        <aside className="w-full">
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-purple-100">
+            <ClientForm
+              editingClient={editingClient}
+              onClientAction={fetchClients}
+              onCancelEdit={handleCancelEdit}
+            />
+          </div>
+        </aside>
+      </div>
+    </div>
   );
 }
-
-export default ClienteManager;

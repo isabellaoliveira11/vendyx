@@ -1,130 +1,136 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  FaHome,
-  FaBox,
-  FaShoppingCart,
-  FaChartBar,
-  FaUsers,
-  FaInfoCircle,
-  FaSync,
-  FaChevronDown,
-  FaChevronUp,
-  FaUserTag,
-  FaDollarSign,
-} from "react-icons/fa";
+  House, Package, ShoppingCart, UsersThree, ChartBar,
+  CurrencyDollar, UserGear, Info, SignOut, CaretLeft, CaretRight, Tag,
+} from 'phosphor-react';
+
+type NavItem = { to: string; label: string; icon: React.ReactNode };
 
 type SidebarProps = {
-  onLinkClick?: () => void; // usado pelo drawer mobile
+  collapsed?: boolean;
+  onToggle?: () => void;
 };
 
-export default function Sidebar({ onLinkClick }: SidebarProps) {
-  const location = useLocation();
+const STORAGE_KEY = 'sidebar:collapsed';
 
-  const [isProductsOpen, setIsProductsOpen] = useState(
-    location.pathname.includes("/produtos") || location.pathname.includes("/categorias")
+export default function Sidebar({ collapsed: controlledCollapsed, onToggle }: SidebarProps) {
+  const navigate = useNavigate();
+
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const isControlled = controlledCollapsed !== undefined;
+  const collapsed = isControlled ? controlledCollapsed! : internalCollapsed;
+
+  useEffect(() => {
+    if (!isControlled) {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved != null) setInternalCollapsed(saved === 'true');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isControlled) {
+      localStorage.setItem(STORAGE_KEY, String(collapsed));
+    }
+  }, [collapsed, isControlled]);
+
+  const handleToggle = () => {
+    if (isControlled) onToggle?.();
+    else setInternalCollapsed(prev => !prev);
+  };
+
+  const items: NavItem[] = useMemo(
+    () => [
+      { to: '/home', label: 'Home', icon: <House size={20} weight="duotone" /> },
+      { to: '/produtos', label: 'Produtos', icon: <Package size={20} weight="duotone" /> },
+      { to: '/categorias', label: 'Categorias', icon: <Tag size={20} weight="duotone" /> },
+      { to: '/vendas', label: 'Vendas', icon: <ShoppingCart size={20} weight="duotone" /> },
+      { to: '/clientes', label: 'Clientes', icon: <UsersThree size={20} weight="duotone" /> },
+      { to: '/relatorios', label: 'Relatórios', icon: <ChartBar size={20} weight="duotone" /> },
+      { to: '/financeiro', label: 'Financeiro', icon: <CurrencyDollar size={20} weight="duotone" /> },
+      { to: '/usuarios', label: 'Usuários', icon: <UserGear size={20} weight="duotone" /> },
+      { to: '/sobre', label: 'Sobre', icon: <Info size={20} weight="duotone" /> },
+    ],
+    []
   );
 
-  const toggleProductsMenu = () => setIsProductsOpen((prev) => !prev);
-
-  const navItems = [
-    { to: "/vendas", icon: <FaShoppingCart />, label: "Vendas" },
-    { to: "/clientes", icon: <FaUserTag />, label: "Clientes" },
-    { to: "/relatorios", icon: <FaChartBar />, label: "Relatórios" },
-    { to: "/financeiro", icon: <FaDollarSign />, label: "Financeiro" },
-    { to: "/usuarios", icon: <FaUsers />, label: "Usuários" },
-    { to: "/sobre", icon: <FaInfoCircle />, label: "Sobre" },
-  ];
-
-  const active = "bg-purple-800 font-semibold text-white shadow-md";
-  const base =
-    "flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 hover:bg-purple-600 text-white/90";
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('guestMode');
+    navigate('/login', { replace: true });
+  };
 
   return (
-    <div className="h-full w-60 bg-purple-700 text-white flex flex-col justify-between shadow-lg">
-      {/* topo + área rolável */}
-      <div className="min-h-0 flex-1 flex flex-col overflow-y-auto">
-        <div className="flex items-center justify-center py-7 text-2xl font-bold border-b border-white/10">
-          <FaSync className="mr-3 animate-spin" />
-          VendyX
-        </div>
+    <aside className={[
+      'sticky top-0 self-start flex-shrink-0',
+      'bg-white border border-gray-100 shadow-xl rounded-r-3xl',
+      'transition-[width] duration-300 ease-in-out',
+      'h-screen z-40 overflow-visible',
+      'w-[72px]',
+      collapsed ? 'lg:w-[88px]' : 'lg:w-[260px]',
+    ].join(' ')}>
+      <button
+        onClick={handleToggle}
+        className="hidden lg:grid absolute -right-3 top-6 z-50 h-9 w-9 place-items-center rounded-full bg-purple-600 text-white shadow-lg ring-4 ring-purple-100 hover:bg-purple-700 hover:scale-105 transition"
+        aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+        type="button"
+      >
+        {collapsed ? <CaretRight size={18} /> : <CaretLeft size={18} />}
+      </button>
 
-        <nav className="flex flex-col gap-3 mt-6 px-4 pb-6">
-          {/* Home */}
-          <NavLink
-            to="/home"
-            onClick={onLinkClick}
-            className={({ isActive }) => `${base} ${isActive ? active : ""}`}
-          >
-            <FaHome /> Home
-          </NavLink>
-
-          {/* Produtos (submenu) */}
-          <div>
-            <button
-              onClick={toggleProductsMenu}
-              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-left font-medium transition-all duration-200 ${
-                location.pathname.includes("/produtos") || location.pathname.includes("/categorias")
-                  ? "bg-purple-800 text-white shadow-md"
-                  : "hover:bg-purple-600 text-white/90"
-              }`}
-              aria-expanded={isProductsOpen}
-              aria-controls="submenu-produtos"
-            >
-              <span className="flex items-center gap-3">
-                <FaBox /> Produtos
-              </span>
-              {isProductsOpen ? <FaChevronUp size={14} /> : <FaChevronDown size={14} />}
-            </button>
-
-            {isProductsOpen && (
-              <div id="submenu-produtos" className="ml-6 mt-2 flex flex-col gap-2 text-sm">
-                <NavLink
-                  to="/produtos"
-                  onClick={onLinkClick}
-                  className={({ isActive }) =>
-                    `pl-2 py-1 rounded-md transition ${
-                      isActive ? "bg-purple-600 text-white" : "hover:bg-purple-500 text-white/90"
-                    }`
-                  }
-                >
-                  Gerenciar Produtos
-                </NavLink>
-                <NavLink
-                  to="/categorias"
-                  onClick={onLinkClick}
-                  className={({ isActive }) =>
-                    `pl-2 py-1 rounded-md transition ${
-                      isActive ? "bg-purple-600 text-white" : "hover:bg-purple-500 text-white/90"
-                    }`
-                  }
-                >
-                  Categorias
-                </NavLink>
-              </div>
-            )}
+      {/* Header */}
+      <div className="flex items-center gap-3 px-3 pt-6 pb-4">
+        <div className="grid place-items-center h-9 w-9 rounded-xl bg-purple-600 text-white font-bold">VX</div>
+        {!collapsed && (
+          <div className="leading-tight hidden lg:block">
+            <div className="font-extrabold text-gray-900 text-lg tracking-wide">VendyX</div>
+            <div className="text-[11px] text-gray-500">Dashboard</div>
           </div>
+        )}
+      </div>
 
-          {/* Demais itens */}
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              onClick={onLinkClick}
-              className={({ isActive }) => `${base} ${isActive ? active : ""}`}
-            >
-              {item.icon} {item.label}
-            </NavLink>
-          ))}
+      <div className="h-[calc(100%-88px)] overflow-y-auto no-scrollbar">
+        <nav className="px-2 pt-2">
+          <ul className="space-y-1">
+            {items.map((item) => (
+              <li key={item.to} className="relative">
+                <NavLink
+                  to={item.to}
+                  className={({ isActive }) =>
+                    [
+                      'group relative flex items-center gap-3 rounded-xl px-3 h-11',
+                      'transition-colors duration-200',
+                      isActive ? 'bg-purple-100 text-purple-900' : 'text-gray-700 hover:bg-gray-100',
+                    ].join(' ')
+                  }
+                  title={item.label}
+                >
+                  <span className="grid place-items-center h-9 w-9 rounded-lg shrink-0">
+                    {item.icon}
+                  </span>
+                  {!collapsed && (
+                    <span className="hidden lg:inline text-sm font-medium truncate">{item.label}</span>
+                  )}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+
+          <div className="my-4 mx-2 h-px bg-gray-200" />
+
+          <button
+            onClick={handleLogout}
+            className="w-full group relative flex items-center gap-3 rounded-xl px-3 h-11 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+            title="Sair"
+            type="button"
+          >
+            <span className="grid place-items-center h-9 w-9 rounded-lg shrink-0">
+              <SignOut size={20} weight="duotone" />
+            </span>
+            {!collapsed && <span className="hidden lg:inline text-sm font-medium">Sair</span>}
+          </button>
         </nav>
       </div>
-
-      {/* rodapé */}
-      <div className="text-center text-sm py-5 border-t border-white/10">
-        Isabela Oliveira
-        <br />
-        <span className="text-xs opacity-80">(ADMIN)</span>
-      </div>
-    </div>
+    </aside>
   );
 }
