@@ -1,2 +1,1 @@
-// src/config/api.ts
-export const API_URL = 'http://localhost:3333';
+export const API_URL = 'https://vendyx-production.up.railway.app';

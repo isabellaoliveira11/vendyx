@@ -26,9 +26,9 @@ const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const Sales = lazy(() => import("./pages/Sales"));
 const Reports = lazy(() => import("./pages/Reports"));
-const Categorias = lazy(() => import("./components/CategoryManager")); // <- AQUI
+const Categorias = lazy(() => import("./components/CategoryManager")); 
 const Clientes = lazy(() => import("./pages/Clientes"));
-const ProductManager = lazy(() => import("./components/ProductManager")); // ok se sua página está em components
+const ProductManager = lazy(() => import("./components/ProductManager"));
 const Financial = lazy(() => import("./pages/Financial"));
 const Users = lazy(() => import("./pages/Users"));
 const About = lazy(() => import("./pages/About"));
