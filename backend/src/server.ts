@@ -12,7 +12,7 @@ const app = Fastify()
 await app.register(fastifyCors, {
   origin: [
     'http://localhost:5173',
-    'https://vendyx.vercel.app' 
+    'https://vendyx.vercel.app',
     'https://vendyx-fittavc6j-isabelas-projects-bededd19.vercel.app'
   ],
   credentials: true,
