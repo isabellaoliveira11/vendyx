@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsup src/server.ts --format esm,cjs",
+    "build": "tsup src/server.ts --format esm,cjs --target es2022",
     "start": "node dist/server.js",
     "deploy": "npx prisma migrate deploy",
     "test": "echo \"Error: no test specified\" && exit 1"
