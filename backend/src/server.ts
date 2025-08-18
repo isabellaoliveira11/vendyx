@@ -12,7 +12,7 @@ const app = Fastify()
 await app.register(fastifyCors, {
   origin: [
     'http://localhost:5173',
-    'https://vendyx.vercel.app' // Troque pela URL correta da sua Vercel se for diferente
+    'https://vendyx.vercel.app' // Frontend em produção
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -30,9 +30,14 @@ app.get('/', async () => {
   return { message: 'Backend Vendyx online! 💜' }
 })
 
-// Usa a porta 3333 no local e process.env.PORT na Railway
 const PORT = Number(process.env.PORT) || 3333
 
-app.listen({ port: PORT, host: '0.0.0.0' }, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`)
-})
+app
+  .listen({ port: PORT, host: '0.0.0.0' })
+  .then(() => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`)
+  })
+  .catch(err => {
+    console.error('❌ Error starting server:', err)
+    process.exit(1)
+  })
