@@ -63,7 +63,6 @@ export default function CategoryManager() {
   const iniciarEdicao = (id: string, nomeAtual: string) => {
     setEditandoId(id);
     setNomeEditado(nomeAtual);
-    // rola suavemente até o topo para ficar perto do card de adicionar (opcional)
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

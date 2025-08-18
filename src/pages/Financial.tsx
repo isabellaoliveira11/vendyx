@@ -1,4 +1,3 @@
-// src/pages/Financial.tsx
 import {
   FaDollarSign,
   FaArrowCircleUp,
@@ -8,7 +7,6 @@ import {
 } from 'react-icons/fa';
 import { useState } from 'react';
 
-// Dados mocados para a tabela de lançamentos
 const mockTransactions = [
   { id: 1, description: 'Venda do pedido #c675', date: '2025-08-11', type: 'Entrada', amount: 449.55 },
   { id: 2, description: 'Pagamento fornecedor de embalagens', date: '2025-08-10', type: 'Saída', amount: 150.0 },
@@ -21,7 +19,7 @@ function formatBRL(value: number) {
 }
 
 export default function Financial() {
-  // estado simples do form
+  
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState<string>('');
   const [type, setType] = useState<'Entrada' | 'Saída'>('Entrada');
@@ -36,7 +34,6 @@ export default function Financial() {
     setDate('');
   };
 
-  // métricas (dinâmicas pelos mocks)
   const entradas = mockTransactions.filter(t => t.type === 'Entrada').reduce((s, t) => s + t.amount, 0);
   const saidas   = mockTransactions.filter(t => t.type === 'Saída').reduce((s, t) => s + t.amount, 0);
   const saldo    = entradas - saidas;

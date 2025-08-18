@@ -1,4 +1,3 @@
-// src/pages/About.tsx
 import {
   FaInfoCircle,
   FaReact,

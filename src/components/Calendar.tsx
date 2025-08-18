@@ -1,4 +1,3 @@
-// src/components/Calendar.tsx
 import { useState } from 'react';
 import {
   format,

@@ -47,7 +47,6 @@ function CategoryForm({
 
     setError(null);
     await onAdd(value);
-    // se não estiver editando, limpa após adicionar
     if (!editingCategoria) setNovaCategoria('');
   };
 

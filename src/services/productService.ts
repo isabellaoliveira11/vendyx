@@ -4,7 +4,8 @@ import { API_URL } from '../config/api';
 export async function createProduct(product: {
   name: string;
   price: number;
-  stock: number; // Alterado de 'quantity' para 'stock'
+  stock: number; 
+  
   categoryId: string;
 }) {
   const response = await axios.post(`${API_URL}/products`, product);

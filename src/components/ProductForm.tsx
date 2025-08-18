@@ -43,7 +43,6 @@ function ProductForm({ categories, onProductAction, editingProduct, onCancelEdit
   const [categoryError, setCategoryError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Preenche/limpa quando muda o produto em edição
   useEffect(() => {
     if (editingProduct) {
       setProductName(editingProduct.name);
@@ -55,7 +54,7 @@ function ProductForm({ categories, onProductAction, editingProduct, onCancelEdit
     } else {
       resetForm();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [editingProduct, categories]);
 
   const resetForm = () => {

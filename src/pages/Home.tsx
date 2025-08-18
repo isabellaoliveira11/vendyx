@@ -1,4 +1,3 @@
-// src/pages/Home.tsx
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { format, isSameMonth, isValid } from 'date-fns';
@@ -16,7 +15,6 @@ import toast from 'react-hot-toast';
 import { Calendar } from '../components/Calendar';
 import { API_URL } from '../config/api';
 
-// Badge compacta para forma de pagamento
 const PaymentMethodTag = ({ method }: { method: string }) => {
   const styles = {
     Pix: 'bg-green-100 text-green-800',
@@ -64,7 +62,6 @@ export default function Home() {
     const formattedDate = format(today, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     setCurrentDateString(formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1));
     fetchSalesAndProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchSalesAndProducts = async () => {
@@ -176,7 +173,6 @@ export default function Home() {
                         </td>
                         <td className="py-3 px-2 text-center">
                           <button
-                            // onClick={() => navigate(`/vendas/${venda.id}`)}
                             className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-purple-600"
                           >
                             <Eye size={16} />

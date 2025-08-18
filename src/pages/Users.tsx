@@ -1,4 +1,3 @@
-// src/pages/Users.tsx
 import {
   FaUsers,
   FaPlus,

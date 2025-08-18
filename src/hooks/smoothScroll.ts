@@ -7,7 +7,6 @@ function scrollToDiv(id: string) {
 
   element.classList.add('div-animation');
 
-  // Remove a classe após 1 segundo (1000ms)
   setTimeout(() => {
     element.classList.remove('div-animation');
   }, 1000);

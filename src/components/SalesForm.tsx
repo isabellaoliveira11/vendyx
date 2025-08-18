@@ -1,4 +1,3 @@
-// src/components/SaleForm.tsx
 import { useEffect, useState, Fragment } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { Check, CaretDown, ShoppingCartSimple, Trash, Percent } from 'phosphor-react';

@@ -26,7 +26,7 @@ const Login = () => {
 
       if (response.ok) {
         console.log('Login bem-sucedido. Salvando token.');
-        localStorage.removeItem('guestMode'); // Remove a flag de convidado em um login real
+        localStorage.removeItem('guestMode'); 
         localStorage.setItem('token', data.token);
         console.log('Navegando para /home...');
         navigate('/home');
@@ -43,8 +43,8 @@ const Login = () => {
   const handleGuestLogin = () => {
     console.log('handleGuestLogin acionada.');
     console.log('Entrando como convidado. Definindo a flag no localStorage.');
-    localStorage.removeItem('token'); // Garante que não há um token de usuário real
-    localStorage.setItem('guestMode', 'true'); // Define a flag de convidado
+    localStorage.removeItem('token'); 
+    localStorage.setItem('guestMode', 'true');
     console.log('Navegando para /home...');
     navigate('/home');
   };

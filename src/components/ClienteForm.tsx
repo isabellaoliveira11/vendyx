@@ -28,7 +28,6 @@ function ClientForm({ editingClient, onClientAction, onCancelEdit }: ClientFormP
   const [emailError, setEmailError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Normaliza email só para validação/exibição
   const normalizedEmail = useMemo(() => clientEmail.trim().toLowerCase(), [clientEmail]);
 
   useEffect(() => {
@@ -77,7 +76,7 @@ function ClientForm({ editingClient, onClientAction, onCancelEdit }: ClientFormP
   }
 
   async function handleSubmit() {
-    if (isLoading) return; // evita duplo clique
+    if (isLoading) return; 
     if (!validateForm()) {
       toast.error('Preencha os campos obrigatórios corretamente.');
       return;
