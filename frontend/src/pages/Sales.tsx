@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { PencilSimple, TrashSimple, ShoppingCart } from 'phosphor-react';
+import { PencilSimple, TrashSimple } from 'phosphor-react';
 import SaleForm from '../components/SalesForm';
 
 const BASE = 'http://localhost:3333';
