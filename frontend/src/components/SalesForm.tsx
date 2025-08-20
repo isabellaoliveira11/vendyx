@@ -83,7 +83,7 @@ export default function SaleForm({ onVendaCriada, clientes }: SaleFormProps) {
 
   const removerItem = (index: number) => {
     setCarrinho((prev) => prev.filter((_, i) => i !== index));
-    toast('Item removido do carrinho.', { icon: '🗑️' });
+    toast('Item removido do carrinho.', { icon: '�️' });
   };
 
   const resetForm = () => {
@@ -213,7 +213,7 @@ export default function SaleForm({ onVendaCriada, clientes }: SaleFormProps) {
       </div>
 
       {/* Produto + Quantidade + Adicionar */}
-      <div className="flex flex-col md:flex-row gap-4 items-end mb-6">
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="flex-1 w-full md:w-auto">
           <label className="block text-sm font-medium text-gray-700 mb-1">Produto</label>
           <Listbox value={produtoSelecionado} onChange={setProdutoSelecionado}>
@@ -276,51 +276,84 @@ export default function SaleForm({ onVendaCriada, clientes }: SaleFormProps) {
 
         <button
           onClick={adicionarAoCarrinho}
-          className="bg-purple-600 text-white px-3 py-2 rounded-md hover:bg-purple-700 transition duration-200 ease-in-out self-end flex items-center justify-center gap-1 text-sm font-semibold h-[42px] min-w-[110px]"
+          className="bg-purple-600 text-white px-3 py-2 rounded-md hover:bg-purple-700 transition duration-200 ease-in-out flex items-center justify-center gap-1 text-sm font-semibold h-[42px] min-w-[110px]"
         >
           + Adicionar
         </button>
       </div>
 
-      {/* Carrinho */}
+      {/* Carrinho (Layout para Mobile e Desktop) */}
       {carrinho.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-separate border-spacing-y-2">
-            <thead>
-              <tr className="text-left bg-purple-100 text-purple-700 uppercase font-semibold text-xs rounded-lg">
-                <th className="py-3 px-3 rounded-l-lg">Produto</th>
-                <th className="py-3 px-3">Qtd.</th>
-                <th className="py-3 px-3">Unitário</th>
-                <th className="py-3 px-3">Total</th>
-                <th className="py-3 px-3 rounded-r-lg">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {carrinho.map((item, index) => (
-                <tr
-                  key={index}
-                  className="bg-white hover:bg-gray-50 transition duration-150 ease-in-out shadow-sm rounded-lg"
-                >
-                  <td className="px-3 py-2 rounded-l-lg">{item.produto.name}</td>
-                  <td className="px-3 py-2">{item.quantidade}</td>
-                  <td className="px-3 py-2">R$ {item.produto.price.toFixed(2)}</td>
-                  <td className="px-3 py-2">
-                    R$ {(item.produto.price * item.quantidade).toFixed(2)}
-                  </td>
-                  <td className="px-3 py-2 rounded-r-lg">
-                    <button
-                      onClick={() => removerItem(index)}
-                      className="text-red-600 hover:text-red-800 transition duration-150 ease-in-out"
-                      title="Remover item"
-                    >
-                      <Trash size={18} weight="bold" />
-                    </button>
-                  </td>
+        <>
+          {/* Tabela para Desktop */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="w-full text-sm border-separate border-spacing-y-2">
+              <thead>
+                <tr className="text-left bg-purple-100 text-purple-700 uppercase font-semibold text-xs rounded-lg">
+                  <th className="py-3 px-3 rounded-l-lg">Produto</th>
+                  <th className="py-3 px-3">Qtd.</th>
+                  <th className="py-3 px-3">Unitário</th>
+                  <th className="py-3 px-3">Total</th>
+                  <th className="py-3 px-3 rounded-r-lg">Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {carrinho.map((item, index) => (
+                  <tr
+                    key={index}
+                    className="bg-white hover:bg-gray-50 transition duration-150 ease-in-out shadow-sm rounded-lg"
+                  >
+                    <td className="px-3 py-2 rounded-l-lg">{item.produto.name}</td>
+                    <td className="px-3 py-2">{item.quantidade}</td>
+                    <td className="px-3 py-2">R$ {item.produto.price.toFixed(2)}</td>
+                    <td className="px-3 py-2">
+                      R$ {(item.produto.price * item.quantidade).toFixed(2)}
+                    </td>
+                    <td className="px-3 py-2 rounded-r-lg">
+                      <button
+                        onClick={() => removerItem(index)}
+                        className="text-red-600 hover:text-red-800 transition duration-150 ease-in-out"
+                        title="Remover item"
+                      >
+                        <Trash size={18} weight="bold" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Versão de Lista (Cards) para Mobile */}
+          <div className="lg:hidden space-y-4">
+            {carrinho.map((item, index) => (
+              <div
+                key={index}
+                className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-semibold text-lg text-gray-800">
+                    {item.produto.name}
+                  </span>
+                  <button
+                    onClick={() => removerItem(index)}
+                    className="text-red-600 hover:text-red-800 transition duration-150 ease-in-out"
+                    title="Remover item"
+                  >
+                    <Trash size={20} weight="bold" />
+                  </button>
+                </div>
+                <div className="flex flex-col text-sm text-gray-600">
+                  <span className="font-medium">Quantidade: {item.quantidade}</span>
+                  <span className="font-medium">Preço Unitário: R$ {item.produto.price.toFixed(2)}</span>
+                  <span className="font-semibold text-base text-purple-700 mt-1">
+                    Total: R$ {(item.produto.price * item.quantidade).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="text-center text-gray-500 py-8 border border-dashed border-gray-300 rounded-lg">
           <p className="flex items-center justify-center gap-2">

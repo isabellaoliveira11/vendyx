@@ -17,17 +17,21 @@ const STORAGE_KEY = 'sidebar:collapsed';
 export default function Sidebar({ collapsed: controlledCollapsed, onToggle }: SidebarProps) {
   const navigate = useNavigate();
 
-  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  // Inicializa o estado lendo diretamente do localStorage.
+  // Isso garante que o estado inicial já é o correto e evita o "piscar".
+  const [internalCollapsed, setInternalCollapsed] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   const isControlled = controlledCollapsed !== undefined;
   const collapsed = isControlled ? controlledCollapsed! : internalCollapsed;
 
-  useEffect(() => {
-    if (!isControlled) {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved != null) setInternalCollapsed(saved === 'true');
-    }
-  }, []);
-
+  // O useEffect agora só se preocupa em SALVAR o estado no localStorage.
   useEffect(() => {
     if (!isControlled) {
       localStorage.setItem(STORAGE_KEY, String(collapsed));

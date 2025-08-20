@@ -64,8 +64,7 @@ export default function Sales() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <ShoppingCart size={28} className="text-purple-700" weight="duotone" />
-        <h2 className="text-2xl font-bold text-gray-800">Vendas</h2>
+
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

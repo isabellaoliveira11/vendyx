@@ -146,7 +146,7 @@ export default function CategoryTable({
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-gray-700 border-separate border-spacing-y-2 min-w-[480px]">
             <thead>
-              <tr className="text-center bg-purple-100 text-purple-700 uppercase font-semibold text-xs rounded-lg">
+              <tr className="text-center text-gray-500 uppercase font-semibold text-xs rounded-lg">
                 <th className="py-3 px-4 rounded-l-lg w-10">#</th>
                 <th className="py-3 px-4 text-left">Nome</th>
                 <th className="py-3 px-4 rounded-r-lg w-28">Ações</th>

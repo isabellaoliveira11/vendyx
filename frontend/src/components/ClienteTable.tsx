@@ -97,12 +97,12 @@ export default function ClienteTable({
       <div className="hidden md:block">
         <table className="w-full text-sm text-gray-700 border-separate border-spacing-y-2 min-w-[720px]">
           <thead>
-            <tr className="text-left bg-purple-100 text-purple-700 uppercase font-semibold text-xs rounded-lg">
-              <th className="py-3 px-4 rounded-l-lg w-10">#</th>
-              <th className="py-3 px-4">Nome</th>
-              <th className="py-3 px-4">Email</th>
-              <th className="py-3 px-4">Telefone</th>
-              <th className="py-3 px-4 rounded-r-lg text-center">Ações</th>
+            <tr className="text-xs uppercase font-semibold text-gray-500">
+              <th className="py-3 px-4 text-left rounded-l-lg w-10">#</th>
+              <th className="py-3 px-4 text-left">Nome</th>
+              <th className="py-3 px-4 text-left">Email</th>
+              <th className="py-3 px-4 text-left">Telefone</th>
+              <th className="py-3 px-4 text-left rounded-r-lg">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -113,7 +113,7 @@ export default function ClienteTable({
                 <td className="py-3 px-4">{c.email}</td>
                 <td className="py-3 px-4">{c.phone || '—'}</td>
                 <td className="py-3 px-4 rounded-r-lg">
-                  <div className="flex justify-center gap-2">
+                  <div className="flex gap-2">
                     <button
                       className="text-blue-600 hover:text-blue-800 p-2 rounded-md hover:bg-blue-50"
                       title="Editar"
